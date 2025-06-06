@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule - MedBuddy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="../../assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>MedBuddy</h3>
+            </div>
+            <div id="sidebarContent"></div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-link">
+                        <span class="material-icons">menu</span>
+                    </button>
+                    <span class="navbar-brand mb-0 h1">Schedule</span>
+                    <div class="ms-auto">
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle text-dark" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <span id="userName">Dr. John Doe</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><a class="dropdown-item" href="#">Notifications</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid py-4">
+                <!-- Working Hours -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Working Hours</h5>
+                                <button class="btn btn-primary" id="editWorkingHours">
+                                    <span class="material-icons align-text-bottom me-1">edit</span>
+                                    Edit Hours
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table" id="workingHoursTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Day</th>
+                                                <th>Start Time</th>
+                                                <th>End Time</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Monday</td>
+                                                <td>09:00 AM</td>
+                                                <td>05:00 PM</td>
+                                                <td><span class="badge bg-success">Working</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Tuesday</td>
+                                                <td>09:00 AM</td>
+                                                <td>05:00 PM</td>
+                                                <td><span class="badge bg-success">Working</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Wednesday</td>
+                                                <td>09:00 AM</td>
+                                                <td>05:00 PM</td>
+                                                <td><span class="badge bg-success">Working</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Thursday</td>
+                                                <td>09:00 AM</td>
+                                                <td>05:00 PM</td>
+                                                <td><span class="badge bg-success">Working</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Friday</td>
+                                                <td>09:00 AM</td>
+                                                <td>05:00 PM</td>
+                                                <td><span class="badge bg-success">Working</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Saturday</td>
+                                                <td>10:00 AM</td>
+                                                <td>02:00 PM</td>
+                                                <td><span class="badge bg-warning">Limited Hours</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Sunday</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td><span class="badge bg-danger">Closed</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Slots -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Appointment Time Slots</h5>
+                                <button class="btn btn-primary" id="addTimeSlot">
+                                    <span class="material-icons align-text-bottom me-1">add</span>
+                                    Add Time Slot
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table" id="timeSlotsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Time Slot</th>
+                                                <th>Duration</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>09:00 AM - 09:30 AM</td>
+                                                <td>30 minutes</td>
+                                                <td><span class="badge bg-success">Active</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary edit-slot">
+                                                        <span class="material-icons align-text-bottom">edit</span>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger delete-slot">
+                                                        <span class="material-icons align-text-bottom">delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>09:30 AM - 10:00 AM</td>
+                                                <td>30 minutes</td>
+                                                <td><span class="badge bg-success">Active</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary edit-slot">
+                                                        <span class="material-icons align-text-bottom">edit</span>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger delete-slot">
+                                                        <span class="material-icons align-text-bottom">delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unavailable Dates -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Unavailable Dates</h5>
+                                <button class="btn btn-primary" id="addUnavailableDate">
+                                    <span class="material-icons align-text-bottom me-1">add</span>
+                                    Add Date
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table" id="unavailableDatesTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Reason</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>2024-01-01</td>
+                                                <td>New Year's Day</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary edit-date">
+                                                        <span class="material-icons align-text-bottom">edit</span>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger delete-date">
+                                                        <span class="material-icons align-text-bottom">delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Working Hours Modal -->
+    <div class="modal fade" id="workingHoursModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Working Hours</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="workingHoursForm">
+                        <div class="mb-3">
+                            <label class="form-label">Day</label>
+                            <select class="form-select" id="workingDay">
+                                <option value="monday">Monday</option>
+                                <option value="tuesday">Tuesday</option>
+                                <option value="wednesday">Wednesday</option>
+                                <option value="thursday">Thursday</option>
+                                <option value="friday">Friday</option>
+                                <option value="saturday">Saturday</option>
+                                <option value="sunday">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="startTime">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="endTime">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="workingStatus">
+                                <option value="working">Working</option>
+                                <option value="limited">Limited Hours</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveWorkingHours">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Time Slot Modal -->
+    <div class="modal fade" id="timeSlotModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Time Slot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="timeSlotForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="slotStartTime">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="slotEndTime">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duration</label>
+                            <select class="form-select" id="slotDuration">
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">1 hour</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="slotStatus">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveTimeSlot">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Unavailable Date Modal -->
+    <div class="modal fade" id="unavailableDateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Unavailable Date</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="unavailableDateForm">
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" id="unavailableDate">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Reason</label>
+                            <input type="text" class="form-control" id="unavailableReason">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveUnavailableDate">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/doctor.js"></script>
+    <script src="../../assets/js/schedule.js"></script>
+</body>
+</html> 

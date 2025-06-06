@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-md-block" id="sidebar">
+                <div class="d-flex justify-content-between align-items-center py-3 px-3 border-bottom">
+                    <h5 class="m-0 fw-bold text-primary">MedBuddy</h5>
+                    <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+                <div class="collapse d-md-block" id="sidebarMenu">
+                    <div class="pt-3" id="sidebarContent">
+                        <!-- Sidebar menu items will be loaded here via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-md navbar-light bg-white mb-4 border-bottom">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">Admin Dashboard</span>
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-decoration-none text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                    <span class="material-icons me-2">account_circle</span>
+                                    <span id="userName">Admin Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="profile.html"><span class="material-icons me-2">person</span>Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">notifications</span>Notifications</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" id="logoutBtn"><span class="material-icons me-2">logout</span>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Dashboard Content -->
+                <div class="container-fluid">
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-primary">people</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Total Users</h6>
+                                        <h2 class="mb-0 mt-2" id="totalUsers">1,267</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-success">local_hospital</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Active Doctors</h6>
+                                        <h2 class="mb-0 mt-2" id="activeDoctors">68</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-warning">schedule</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Appointments Today</h6>
+                                        <h2 class="mb-0 mt-2" id="appointmentsToday">142</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-danger">priority_high</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Pending Issues</h6>
+                                        <h2 class="mb-0 mt-2" id="pendingIssues">23</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Row -->
+                    <div class="row mb-4">
+                        <div class="col-md-8 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">System Activity</h5>
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <div style="position: relative; width: 100%; height: 250px;">
+                                        <canvas id="activityChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">User Distribution</h5>
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <div style="position: relative; width: 100%; height: 250px;">
+                                        <canvas id="userDistributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Access and Recent Activity -->
+                    <div class="row mb-4">
+                        <div class="col-md-5 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">Quick Access</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <a href="user-management.html" class="btn btn-light w-100 py-3 text-start">
+                                                <span class="material-icons align-middle me-2">manage_accounts</span>
+                                                User Management
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="system-settings.html" class="btn btn-light w-100 py-3 text-start">
+                                                <span class="material-icons align-middle me-2">settings</span>
+                                                System Settings
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="messages.html" class="btn btn-light w-100 py-3 text-start">
+                                                <span class="material-icons align-middle me-2">message</span>
+                                                Messages
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="reports.html" class="btn btn-light w-100 py-3 text-start">
+                                                <span class="material-icons align-middle me-2">analytics</span>
+                                                Reports
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">Recent Activity</h5>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush" id="recentActivities">
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">New doctor registered</h6>
+                                                <small class="text-muted">Just now</small>
+                                            </div>
+                                            <p class="mb-1">Dr. Emily Johnson registered as a Neurologist</p>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">System update completed</h6>
+                                                <small class="text-muted">2 hours ago</small>
+                                            </div>
+                                            <p class="mb-1">MedBuddy system updated to version 2.4.5</p>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Patient complaint resolved</h6>
+                                                <small class="text-muted">3 hours ago</small>
+                                            </div>
+                                            <p class="mb-1">Ticket #45678 regarding appointment scheduling has been resolved</p>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">New clinic added</h6>
+                                                <small class="text-muted">Yesterday</small>
+                                            </div>
+                                            <p class="mb-1">Westside Medical Center added to the network</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Management Preview -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">User Management</h5>
+                                    <a href="user-management.html" class="btn btn-sm btn-primary">Manage Users</a>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="nav nav-tabs" id="userTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="recent-tab" data-bs-toggle="tab" data-bs-target="#recent-users" type="button" role="tab">Recent Users</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-approvals" type="button" role="tab">Pending Approvals</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content pt-3" id="userTabsContent">
+                                        <div class="tab-pane fade show active" id="recent-users" role="tabpanel">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <th>Role</th>
+                                                            <th>Email</th>
+                                                            <th>Joined</th>
+                                                            <th>Status</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Dr. Emily Johnson</td>
+                                                            <td>Doctor</td>
+                                                            <td>emily.johnson@example.com</td>
+                                                            <td>Today</td>
+                                                            <td><span class="badge bg-success">Active</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-secondary"><span class="material-icons small">visibility</span></button>
+                                                                <button class="btn btn-sm btn-outline-primary"><span class="material-icons small">edit</span></button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Robert Smith</td>
+                                                            <td>Patient</td>
+                                                            <td>robert.smith@example.com</td>
+                                                            <td>Yesterday</td>
+                                                            <td><span class="badge bg-success">Active</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-secondary"><span class="material-icons small">visibility</span></button>
+                                                                <button class="btn btn-sm btn-outline-primary"><span class="material-icons small">edit</span></button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Lisa Chen</td>
+                                                            <td>Assistant</td>
+                                                            <td>lisa.chen@example.com</td>
+                                                            <td>2 days ago</td>
+                                                            <td><span class="badge bg-success">Active</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-secondary"><span class="material-icons small">visibility</span></button>
+                                                                <button class="btn btn-sm btn-outline-primary"><span class="material-icons small">edit</span></button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>John Davis</td>
+                                                            <td>Patient</td>
+                                                            <td>john.davis@example.com</td>
+                                                            <td>3 days ago</td>
+                                                            <td><span class="badge bg-warning text-dark">Inactive</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-secondary"><span class="material-icons small">visibility</span></button>
+                                                                <button class="btn btn-sm btn-outline-primary"><span class="material-icons small">edit</span></button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="pending-approvals" role="tabpanel">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <th>Role</th>
+                                                            <th>Email</th>
+                                                            <th>Applied</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Dr. Michael Wong</td>
+                                                            <td>Doctor</td>
+                                                            <td>michael.wong@example.com</td>
+                                                            <td>Today</td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-success approve-user" data-user-id="user123"><span class="material-icons small">check</span> Approve</button>
+                                                                <button class="btn btn-sm btn-danger"><span class="material-icons small">close</span> Reject</button>
+                                                                <button class="btn btn-sm btn-outline-secondary"><span class="material-icons small">visibility</span></button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Dr. Sarah Miller</td>
+                                                            <td>Doctor</td>
+                                                            <td>sarah.miller@example.com</td>
+                                                            <td>Yesterday</td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-success approve-user" data-user-id="user124"><span class="material-icons small">check</span> Approve</button>
+                                                                <button class="btn btn-sm btn-danger"><span class="material-icons small">close</span> Reject</button>
+                                                                <button class="btn btn-sm btn-outline-secondary"><span class="material-icons small">visibility</span></button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Jessica Thompson</td>
+                                                            <td>Assistant</td>
+                                                            <td>jessica.thompson@example.com</td>
+                                                            <td>2 days ago</td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-success approve-user" data-user-id="user125"><span class="material-icons small">check</span> Approve</button>
+                                                                <button class="btn btn-sm btn-danger"><span class="material-icons small">close</span> Reject</button>
+                                                                <button class="btn btn-sm btn-outline-secondary"><span class="material-icons small">visibility</span></button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Common JS -->
+    <script src="../../assets/js/common.js"></script>
+    <!-- Admin specific JS -->
+    <script src="../../assets/js/admin.js"></script>
+    <!-- Dashboard specific JS -->
+    <script src="../../assets/js/admin-dashboard.js"></script>
+</body>
+</html> 

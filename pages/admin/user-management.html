@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-md-block" id="sidebar">
+                <div class="d-flex justify-content-between align-items-center py-3 px-3 border-bottom">
+                    <h5 class="m-0 fw-bold text-primary">MedBuddy</h5>
+                    <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+                <div class="collapse d-md-block" id="sidebarMenu">
+                    <div class="pt-3" id="sidebarContent">
+                        <!-- Sidebar menu items will be loaded here via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-md navbar-light bg-white mb-4 border-bottom">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">User Management</span>
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-decoration-none text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                    <span class="material-icons me-2">account_circle</span>
+                                    <span id="userName">Admin Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="profile.html"><span class="material-icons me-2">person</span>Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">notifications</span>Notifications</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" id="logoutBtn"><span class="material-icons me-2">logout</span>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- User Management Content -->
+                <div class="container-fluid">
+                    <!-- Action buttons -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary" id="addUserBtn">
+                                    <span class="material-icons align-middle me-1">add</span> Add User
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="exportUsersBtn">
+                                    <span class="material-icons align-middle me-1">download</span> Export
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="printUsersBtn">
+                                    <span class="material-icons align-middle me-1">print</span> Print
+                                </button>
+                            </div>
+                            <a href="dashboard.html" class="btn btn-outline-secondary ms-2">
+                                <span class="material-icons align-middle me-1">arrow_back</span> Back to Dashboard
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search users..." id="searchUsers">
+                                <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                                    <span class="material-icons align-middle">search</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body py-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <label for="roleFilter" class="form-label">Role</label>
+                                            <select class="form-select" id="roleFilter">
+                                                <option value="" selected>All Roles</option>
+                                                <option value="patient">Patient</option>
+                                                <option value="doctor">Doctor</option>
+                                                <option value="assistant">Assistant</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="statusFilter" class="form-label">Status</label>
+                                            <select class="form-select" id="statusFilter">
+                                                <option value="" selected>All Statuses</option>
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                                <option value="pending">Pending</option>
+                                                <option value="suspended">Suspended</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="dateFilter" class="form-label">Join Date</label>
+                                            <select class="form-select" id="dateFilter">
+                                                <option value="" selected>All Time</option>
+                                                <option value="today">Today</option>
+                                                <option value="week">This Week</option>
+                                                <option value="month">This Month</option>
+                                                <option value="year">This Year</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 d-flex align-items-end">
+                                            <button class="btn btn-primary w-100" id="applyFiltersBtn">Apply Filters</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Tabs -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <ul class="nav nav-tabs" id="userTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="all-users-tab" data-bs-toggle="tab" data-bs-target="#all-users" type="button" role="tab">
+                                        All Users <span class="badge bg-secondary ms-1" id="allUsersCount">1267</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="patients-tab" data-bs-toggle="tab" data-bs-target="#patients" type="button" role="tab">
+                                        Patients <span class="badge bg-secondary ms-1" id="patientsCount">1050</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="doctors-tab" data-bs-toggle="tab" data-bs-target="#doctors" type="button" role="tab">
+                                        Doctors <span class="badge bg-secondary ms-1" id="doctorsCount">68</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="assistants-tab" data-bs-toggle="tab" data-bs-target="#assistants" type="button" role="tab">
+                                        Assistants <span class="badge bg-secondary ms-1" id="assistantsCount">124</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="admins-tab" data-bs-toggle="tab" data-bs-target="#admins" type="button" role="tab">
+                                        Admins <span class="badge bg-secondary ms-1" id="adminsCount">25</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                                        Pending <span class="badge bg-primary ms-1" id="pendingCount">12</span>
+                                    </button>
+                                </li>
+                            </ul>
+                            
+                            <div class="tab-content pt-4" id="userTabsContent">
+                                <!-- All Users Tab -->
+                                <div class="tab-pane fade show active" id="all-users" role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="selectAllUsers">
+                                                        </div>
+                                                    </th>
+                                                    <th>Name</th>
+                                                    <th>Role</th>
+                                                    <th>Email</th>
+                                                    <th>Phone</th>
+                                                    <th>Joined</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="allUsersTable">
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="user1">
+                                                        </div>
+                                                    </td>
+                                                    <td>John Smith</td>
+                                                    <td>Patient</td>
+                                                    <td>john.smith@example.com</td>
+                                                    <td>+1 (555) 123-4567</td>
+                                                    <td>Jan 15, 2023</td>
+                                                    <td><span class="badge bg-success">Active</span></td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                Actions
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user1" data-action="view"><span class="material-icons small me-2">visibility</span>View</a></li>
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user1" data-action="edit"><span class="material-icons small me-2">edit</span>Edit</a></li>
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user1" data-action="suspend"><span class="material-icons small me-2">block</span>Suspend</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li><a class="dropdown-item text-danger" href="#" data-user-id="user1" data-action="delete"><span class="material-icons small me-2">delete</span>Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="user2">
+                                                        </div>
+                                                    </td>
+                                                    <td>Dr. Sarah Johnson</td>
+                                                    <td>Doctor</td>
+                                                    <td>sarah.johnson@example.com</td>
+                                                    <td>+1 (555) 234-5678</td>
+                                                    <td>Mar 22, 2023</td>
+                                                    <td><span class="badge bg-success">Active</span></td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                Actions
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user2" data-action="view"><span class="material-icons small me-2">visibility</span>View</a></li>
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user2" data-action="edit"><span class="material-icons small me-2">edit</span>Edit</a></li>
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user2" data-action="suspend"><span class="material-icons small me-2">block</span>Suspend</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li><a class="dropdown-item text-danger" href="#" data-user-id="user2" data-action="delete"><span class="material-icons small me-2">delete</span>Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="user3">
+                                                        </div>
+                                                    </td>
+                                                    <td>Maria Garcia</td>
+                                                    <td>Assistant</td>
+                                                    <td>maria.garcia@example.com</td>
+                                                    <td>+1 (555) 345-6789</td>
+                                                    <td>Apr 10, 2023</td>
+                                                    <td><span class="badge bg-warning text-dark">Inactive</span></td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                Actions
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user3" data-action="view"><span class="material-icons small me-2">visibility</span>View</a></li>
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user3" data-action="edit"><span class="material-icons small me-2">edit</span>Edit</a></li>
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user3" data-action="activate"><span class="material-icons small me-2">check_circle</span>Activate</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li><a class="dropdown-item text-danger" href="#" data-user-id="user3" data-action="delete"><span class="material-icons small me-2">delete</span>Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="user4">
+                                                        </div>
+                                                    </td>
+                                                    <td>David Kim</td>
+                                                    <td>Admin</td>
+                                                    <td>david.kim@example.com</td>
+                                                    <td>+1 (555) 456-7890</td>
+                                                    <td>Feb 5, 2023</td>
+                                                    <td><span class="badge bg-success">Active</span></td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                Actions
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user4" data-action="view"><span class="material-icons small me-2">visibility</span>View</a></li>
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user4" data-action="edit"><span class="material-icons small me-2">edit</span>Edit</a></li>
+                                                                <li><a class="dropdown-item" href="#" data-user-id="user4" data-action="suspend"><span class="material-icons small me-2">block</span>Suspend</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li><a class="dropdown-item text-danger" href="#" data-user-id="user4" data-action="delete"><span class="material-icons small me-2">delete</span>Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- Pagination -->
+                                    <nav aria-label="User pagination" class="mt-4">
+                                        <ul class="pagination justify-content-center">
+                                            <li class="page-item disabled">
+                                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                                            </li>
+                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">Next</a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                                
+                                <!-- Other tabs will be populated via JavaScript -->
+                                <div class="tab-pane fade" id="patients" role="tabpanel"></div>
+                                <div class="tab-pane fade" id="doctors" role="tabpanel"></div>
+                                <div class="tab-pane fade" id="assistants" role="tabpanel"></div>
+                                <div class="tab-pane fade" id="admins" role="tabpanel"></div>
+                                <div class="tab-pane fade" id="pending" role="tabpanel"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Add/Edit User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="userRole" class="form-label">Role</label>
+                                <select class="form-select" id="userRole" required>
+                                    <option value="" selected disabled>Select a role</option>
+                                    <option value="patient">Patient</option>
+                                    <option value="doctor">Doctor</option>
+                                    <option value="assistant">Assistant</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="userStatus" class="form-label">Status</label>
+                                <select class="form-select" id="userStatus" required>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password">
+                                <small class="form-text text-muted">Leave blank to keep current password (for editing)</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword">
+                            </div>
+                        </div>
+                        <div class="row mb-3" id="doctorSpecificFields" style="display: none;">
+                            <div class="col-md-6">
+                                <label for="specialty" class="form-label">Specialty</label>
+                                <select class="form-select" id="specialty">
+                                    <option value="" selected disabled>Select a specialty</option>
+                                    <option value="cardiology">Cardiology</option>
+                                    <option value="dermatology">Dermatology</option>
+                                    <option value="neurology">Neurology</option>
+                                    <option value="orthopedics">Orthopedics</option>
+                                    <option value="pediatrics">Pediatrics</option>
+                                    <option value="psychiatry">Psychiatry</option>
+                                    <option value="general">General Practice</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="licenseNumber" class="form-label">License Number</label>
+                                <input type="text" class="form-control" id="licenseNumber">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveUserBtn">Save User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- View User Modal -->
+    <div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">User Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="mb-3">
+                                <span class="material-icons" style="font-size: 100px; color: #6c757d;">account_circle</span>
+                            </div>
+                            <h5 id="viewUserName">John Smith</h5>
+                            <p class="text-muted" id="viewUserRole">Patient</p>
+                            <div class="mb-2" id="viewUserStatus">
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-sm btn-outline-primary" id="editUserBtn">
+                                    <span class="material-icons small align-middle me-1">edit</span> Edit User
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Contact Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 text-muted">Email:</div>
+                                        <div class="col-md-8" id="viewUserEmail">john.smith@example.com</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 text-muted">Phone:</div>
+                                        <div class="col-md-8" id="viewUserPhone">+1 (555) 123-4567</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 text-muted">Address:</div>
+                                        <div class="col-md-8" id="viewUserAddress">123 Main St, Anytown, CA 12345</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Account Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 text-muted">User ID:</div>
+                                        <div class="col-md-8" id="viewUserId">user1</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 text-muted">Join Date:</div>
+                                        <div class="col-md-8" id="viewUserJoinDate">Jan 15, 2023</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 text-muted">Last Login:</div>
+                                        <div class="col-md-8" id="viewUserLastLogin">Today, 10:45 AM</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card" id="doctorInfoCard" style="display: none;">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Doctor Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 text-muted">Specialty:</div>
+                                        <div class="col-md-8" id="viewUserSpecialty">Cardiology</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 text-muted">License Number:</div>
+                                        <div class="col-md-8" id="viewUserLicense">MD12345</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Notes</h6>
+                        <p id="viewUserNotes">No additional notes.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationTitle">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmationMessage">
+                    Are you sure you want to perform this action?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Common JS -->
+    <script src="../../assets/js/common.js"></script>
+    <!-- Admin specific JS -->
+    <script src="../../assets/js/admin.js"></script>
+    <!-- User Management specific JS -->
+    <script src="../../assets/js/user-management.js"></script>
+</body>
+</html> 

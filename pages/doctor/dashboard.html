@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../../assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>MedBuddy</h3>
+            </div>
+            <div id="sidebarContent"></div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-link">
+                        <span class="material-icons">menu</span>
+                    </button>
+                    <span class="navbar-brand mb-0 h1">Doctor Dashboard</span>
+                    <div class="ms-auto">
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle text-dark" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <span id="userName">Dr. John Doe</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><a class="dropdown-item" href="#">Notifications</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid py-4">
+                <div class="row mb-4">
+                    <!-- Statistics Cards -->
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">Total Patients</h6>
+                                <h2 class="card-title mb-0" id="totalPatientsCount">48</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">Appointments Today</h6>
+                                <h2 class="card-title mb-0" id="todayAppointmentsCount">8</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">Pending Results</h6>
+                                <h2 class="card-title mb-0" id="pendingResultsCount">3</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">Total Consultations</h6>
+                                <h2 class="card-title mb-0" id="totalConsultationsCount">156</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Today's Appointments -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Today's Appointments</h5>
+                                <button class="btn btn-sm btn-outline-primary" id="refreshAppointments">
+                                    <span class="material-icons align-text-bottom">refresh</span>
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush" id="todayAppointmentsList">
+                                    <!-- Appointments will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="appointments.html" class="btn btn-primary">View All Appointments</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Messages -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Recent Messages</h5>
+                                <span class="badge bg-danger">3 Unread</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush" id="recentMessagesList">
+                                    <!-- Messages will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="messages.html" class="btn btn-primary">View All Messages</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Appointment Details Modal -->
+    <div class="modal fade" id="appointmentDetailsModal" tabindex="-1" aria-labelledby="appointmentDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appointmentDetailsModalLabel">Appointment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Patient:</strong> <span id="modalPatientName"></span></p>
+                            <p><strong>Date:</strong> <span id="modalDate"></span></p>
+                            <p><strong>Time:</strong> <span id="modalTime"></span></p>
+                            <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Contact:</strong> <span id="modalContact"></span></p>
+                            <p><strong>Clinic:</strong> <span id="modalClinic"></span></p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Symptoms</h6>
+                        <p id="modalSymptoms"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Notes</h6>
+                        <textarea class="form-control" id="modalNotes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="approveRequestBtn">Approve</button>
+                    <button type="button" class="btn btn-danger" id="rejectRequestBtn">Reject</button>
+                    <button type="button" class="btn btn-primary" id="saveNotesBtn">Save Notes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Common JS -->
+    <script src="../../assets/js/common.js"></script>
+    <!-- Doctor specific JS -->
+    <script src="../../assets/js/doctor.js"></script>
+    <!-- Dashboard specific JS -->
+    <script src="../../assets/js/dashboard.js"></script>
+</body>
+</html> 

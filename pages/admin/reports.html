@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-md-block" id="sidebar">
+                <div class="d-flex justify-content-between align-items-center py-3 px-3 border-bottom">
+                    <h5 class="m-0 fw-bold text-primary">MedBuddy</h5>
+                    <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+                <div class="collapse d-md-block" id="sidebarMenu">
+                    <div class="pt-3" id="sidebarContent">
+                        <!-- Sidebar menu items will be loaded here via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-md navbar-light bg-white mb-4 border-bottom">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">Reports & Analytics</span>
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-decoration-none text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                    <span class="material-icons me-2">account_circle</span>
+                                    <span id="userName">Admin Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="profile.html"><span class="material-icons me-2">person</span>Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">notifications</span>Notifications</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" id="logoutBtn"><span class="material-icons me-2">logout</span>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Reports Content -->
+                <div class="container-fluid">
+                    <!-- Report Filters -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">Report Filters</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="reportFilters">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label for="reportType" class="form-label">Report Type</label>
+                                                <select class="form-select" id="reportType">
+                                                    <option value="overview" selected>Appointment Overview</option>
+                                                    <option value="patients">Patient Statistics</option>
+                                                    <option value="doctors">Doctor Performance</option>
+                                                    <option value="revenue">Revenue Analysis</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="startDate" class="form-label">Start Date</label>
+                                                <input type="date" class="form-control" id="startDate">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="endDate" class="form-label">End Date</label>
+                                                <input type="date" class="form-control" id="endDate">
+                                            </div>
+                                            <div class="col-md-3 d-flex align-items-end">
+                                                <div class="d-grid gap-2 w-100">
+                                                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                                    <button type="button" class="btn btn-outline-secondary" id="resetFilters">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Export Options -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-primary" data-export="pdf">
+                                    <span class="material-icons align-middle me-1">picture_as_pdf</span> Export PDF
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" data-export="excel">
+                                    <span class="material-icons align-middle me-1">table_chart</span> Export Excel
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" data-export="csv">
+                                    <span class="material-icons align-middle me-1">insert_drive_file</span> Export CSV
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" data-export="print">
+                                    <span class="material-icons align-middle me-1">print</span> Print
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics Cards -->
+                    <!-- Overview Section -->
+                    <div class="row mb-4" data-report-section="overview">
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-primary">calendar_today</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Total Appointments</h6>
+                                        <h2 class="mb-0 mt-2" id="totalAppointments">1,432</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-success">check_circle</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Completed</h6>
+                                        <h2 class="mb-0 mt-2" id="completedAppointments">1,215</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-warning">cancel</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Cancelled</h6>
+                                        <h2 class="mb-0 mt-2" id="cancelledAppointments">135</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-danger">person_off</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">No-Show</h6>
+                                        <h2 class="mb-0 mt-2" id="noShowAppointments">82</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Patients Section -->
+                    <div class="row mb-4" data-report-section="patients" style="display: none;">
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-primary">people</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Total Patients</h6>
+                                        <h2 class="mb-0 mt-2" id="totalPatients">1,267</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-success">person_add</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">New Patients</h6>
+                                        <h2 class="mb-0 mt-2" id="newPatients">87</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-info">replay</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Returning Patients</h6>
+                                        <h2 class="mb-0 mt-2" id="returningPatients">362</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-success">verified_user</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Active Patients</h6>
+                                        <h2 class="mb-0 mt-2" id="activePatients">823</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Doctors Section -->
+                    <div class="row mb-4" data-report-section="doctors" style="display: none;">
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-primary">medical_services</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Total Doctors</h6>
+                                        <h2 class="mb-0 mt-2" id="totalDoctors">68</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-info">insert_chart</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Avg. Appointments</h6>
+                                        <h2 class="mb-0 mt-2" id="appointmentsPerDoctor">21</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-warning">star</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Average Rating</h6>
+                                        <h2 class="mb-0 mt-2" id="averageRating">4.7</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-success">favorite</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Top Specialty</h6>
+                                        <h2 class="mb-0 mt-2" id="topSpecialty">Cardiology</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Revenue Section -->
+                    <div class="row mb-4" data-report-section="revenue" style="display: none;">
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-primary">payments</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Total Revenue</h6>
+                                        <h2 class="mb-0 mt-2" id="totalRevenue">$127,845.00</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-info">calculate</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Avg. Per Appointment</h6>
+                                        <h2 class="mb-0 mt-2" id="averagePerAppointment">$105.22</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-success">health_and_safety</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Insurance Covered</h6>
+                                        <h2 class="mb-0 mt-2" id="insuranceCovered">$98,450.00</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                                        <span class="material-icons text-warning">account_balance_wallet</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-0">Patient Out-of-Pocket</h6>
+                                        <h2 class="mb-0 mt-2" id="outOfPocket">$29,395.00</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Row -->
+                    <div class="row mb-4">
+                        <div class="col-md-8 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0" id="primaryChartTitle">Appointment Status Trends</h5>
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <div style="position: relative; width: 100%; height: 300px;">
+                                        <canvas id="primaryChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0" id="secondaryChartTitle">Appointment Distribution</h5>
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <div style="position: relative; width: 100%; height: 300px;">
+                                        <canvas id="secondaryChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detailed Report Table -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">Detailed Report</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr id="reportDetailsHeader">
+                                                    <th>Date</th>
+                                                    <th>Total Appointments</th>
+                                                    <th>Completed</th>
+                                                    <th>Cancelled</th>
+                                                    <th>No-Show</th>
+                                                    <th>Completion Rate</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="reportDetailsTable">
+                                                <!-- Table data will be loaded here via JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Common JS -->
+    <script src="../../assets/js/common.js"></script>
+    <!-- Admin specific JS -->
+    <script src="../../assets/js/admin.js"></script>
+    <!-- Reports specific JS -->
+    <script src="../../assets/js/admin-reports.js"></script>
+</body>
+</html> 

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-md-block" id="sidebar">
+                <div class="d-flex justify-content-between align-items-center py-3 px-3 border-bottom">
+                    <h5 class="m-0 fw-bold text-primary">MedBuddy</h5>
+                    <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+                <div class="collapse d-md-block" id="sidebarMenu">
+                    <div class="pt-3" id="sidebarContent">
+                        <!-- Sidebar menu items will be loaded here via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-md navbar-light bg-white mb-4 border-bottom">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">System Settings</span>
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-decoration-none text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                    <span class="material-icons me-2">account_circle</span>
+                                    <span id="userName">Admin User</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">person</span>Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">settings</span>Settings</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" id="logoutBtn"><span class="material-icons me-2">logout</span>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Settings Content -->
+                <div class="container-fluid">
+                    <!-- Header -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="mb-0">System Configuration</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Tabs -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">
+                                                <span class="material-icons align-middle me-1">settings</span> General
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments" type="button" role="tab" aria-controls="appointments" aria-selected="false">
+                                                <span class="material-icons align-middle me-1">event</span> Appointments
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab" aria-controls="notifications" aria-selected="false">
+                                                <span class="material-icons align-middle me-1">notifications</span> Notifications
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
+                                                <span class="material-icons align-middle me-1">security</span> Security
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab" aria-controls="advanced" aria-selected="false">
+                                                <span class="material-icons align-middle me-1">code</span> Advanced
+                                            </button>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="tab-content p-3" id="settingsTabsContent">
+                                        <!-- General Settings -->
+                                        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                                            <form id="generalSettingsForm">
+                                                <div class="mb-4">
+                                                    <h5>System Information</h5>
+                                                    <div class="mb-3">
+                                                        <label for="systemName" class="form-label">System Name</label>
+                                                        <input type="text" class="form-control" id="systemName" value="MedBuddy Healthcare System">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="systemLogo" class="form-label">System Logo</label>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="../../assets/img/logo-placeholder.png" alt="Logo" class="me-3" style="width: 60px; height: 60px;">
+                                                            <input type="file" class="form-control" id="systemLogo">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="systemNotice" class="form-label">System Notice</label>
+                                                        <textarea class="form-control" id="systemNotice" rows="3">Welcome to MedBuddy! Our system is currently in beta testing.</textarea>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-4">
+                                                    <h5>Contact Information</h5>
+                                                    <div class="mb-3">
+                                                        <label for="adminEmail" class="form-label">Admin Email</label>
+                                                        <input type="email" class="form-control" id="adminEmail" value="admin@medbuddy.com">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="supportPhone" class="form-label">Support Phone</label>
+                                                        <input type="tel" class="form-control" id="supportPhone" value="555-123-4567">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="address" class="form-label">Office Address</label>
+                                                        <textarea class="form-control" id="address" rows="2">123 Healthcare Ave, Medical City, MC 12345</textarea>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                        
+                                        <!-- Appointment Settings -->
+                                        <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+                                            <form id="appointmentSettingsForm">
+                                                <div class="mb-4">
+                                                    <h5>Scheduling Options</h5>
+                                                    <div class="mb-3">
+                                                        <label for="maxAppointments" class="form-label">Maximum Appointments per Day</label>
+                                                        <input type="number" class="form-control" id="maxAppointments" value="10">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="appointmentDuration" class="form-label">Default Appointment Duration (minutes)</label>
+                                                        <select class="form-select" id="appointmentDuration">
+                                                            <option value="15">15 minutes</option>
+                                                            <option value="30" selected>30 minutes</option>
+                                                            <option value="45">45 minutes</option>
+                                                            <option value="60">60 minutes</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-4">
+                                                    <h5>Business Hours</h5>
+                                                    <div class="mb-3">
+                                                        <label for="businessHours" class="form-label">Default Clinic Hours</label>
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <label for="openTime" class="form-label">Opening Time</label>
+                                                                <input type="time" class="form-control" id="openTime" value="09:00">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label for="closeTime" class="form-label">Closing Time</label>
+                                                                <input type="time" class="form-control" id="closeTime" value="17:00">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="allowWeekends">
+                                                            <label class="form-check-label" for="allowWeekends">
+                                                                Allow Weekend Appointments
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-4">
+                                                    <h5>Approval Settings</h5>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="autoApproval">
+                                                            <label class="form-check-label" for="autoApproval">
+                                                                Enable Automatic Appointment Approval
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="allowReschedule" checked>
+                                                            <label class="form-check-label" for="allowReschedule">
+                                                                Allow Patients to Reschedule Appointments
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="cancellationPeriod" class="form-label">Cancellation Notice Period (hours)</label>
+                                                        <input type="number" class="form-control" id="cancellationPeriod" value="24">
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                        
+                                        <!-- Notification Settings -->
+                                        <div class="tab-pane fade" id="notifications" role="tabpanel" aria-labelledby="notifications-tab">
+                                            <form id="notificationSettingsForm">
+                                                <div class="mb-4">
+                                                    <h5>Email Notifications</h5>
+                                                    <div class="mb-3">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                                            <label class="form-check-label" for="emailNotifications">
+                                                                Enable Email Notifications
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="emailFrom" class="form-label">Sender Email Address</label>
+                                                        <input type="email" class="form-control" id="emailFrom" value="notifications@medbuddy.com">
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-4">
+                                                    <h5>SMS Notifications</h5>
+                                                    <div class="mb-3">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="smsNotifications" checked>
+                                                            <label class="form-check-label" for="smsNotifications">
+                                                                Enable SMS Notifications
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="smsProvider" class="form-label">SMS Provider</label>
+                                                        <select class="form-select" id="smsProvider">
+                                                            <option value="twilio" selected>Twilio</option>
+                                                            <option value="vonage">Vonage</option>
+                                                            <option value="aws">AWS SNS</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-4">
+                                                    <h5>Notification Events</h5>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox" id="notifyNewAppointment" checked>
+                                                                    <label class="form-check-label" for="notifyNewAppointment">
+                                                                        New Appointment Requests
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox" id="notifyAppointmentConfirmation" checked>
+                                                                    <label class="form-check-label" for="notifyAppointmentConfirmation">
+                                                                        Appointment Confirmations
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox" id="notifyAppointmentCancellation" checked>
+                                                                    <label class="form-check-label" for="notifyAppointmentCancellation">
+                                                                        Appointment Cancellations
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox" id="notifyAppointmentReminder" checked>
+                                                                    <label class="form-check-label" for="notifyAppointmentReminder">
+                                                                        Appointment Reminders
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox" id="notifyNewUser">
+                                                                    <label class="form-check-label" for="notifyNewUser">
+                                                                        New User Registrations
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox" id="notifySystemUpdates">
+                                                                    <label class="form-check-label" for="notifySystemUpdates">
+                                                                        System Updates
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                        
+                                        <!-- Security Settings -->
+                                        <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
+                                            <form id="securitySettingsForm">
+                                                <div class="mb-4">
+                                                    <h5>Password Policy</h5>
+                                                    <div class="mb-3">
+                                                        <label for="passwordMinLength" class="form-label">Minimum Password Length</label>
+                                                        <input type="number" class="form-control" id="passwordMinLength" value="8">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="requireUppercase" checked>
+                                                            <label class="form-check-label" for="requireUppercase">
+                                                                Require Uppercase Letter
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="requireNumber" checked>
+                                                            <label class="form-check-label" for="requireNumber">
+                                                                Require Number
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="requireSpecialChar">
+                                                            <label class="form-check-label" for="requireSpecialChar">
+                                                                Require Special Character
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-4">
+                                                    <h5>Account Security</h5>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="autoAccountApproval" checked>
+                                                            <label class="form-check-label" for="autoAccountApproval">
+                                                                Automatically Approve Patient Accounts
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="requireEmailVerification" checked>
+                                                            <label class="form-check-label" for="requireEmailVerification">
+                                                                Require Email Verification
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label>
+                                                        <input type="number" class="form-control" id="sessionTimeout" value="30">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="enableTwoFactor">
+                                                            <label class="form-check-label" for="enableTwoFactor">
+                                                                Enable Two-Factor Authentication
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                        
+                                        <!-- Advanced Settings -->
+                                        <div class="tab-pane fade" id="advanced" role="tabpanel" aria-labelledby="advanced-tab">
+                                            <form id="advancedSettingsForm">
+                                                <div class="mb-4">
+                                                    <h5>System Maintenance</h5>
+                                                    <div class="mb-3">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="maintenanceMode">
+                                                            <label class="form-check-label" for="maintenanceMode">
+                                                                Enable Maintenance Mode
+                                                            </label>
+                                                        </div>
+                                                        <small class="text-muted">When enabled, only administrators can access the system.</small>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="maintenanceMessage" class="form-label">Maintenance Message</label>
+                                                        <textarea class="form-control" id="maintenanceMessage" rows="2">System is currently undergoing maintenance. Please check back soon.</textarea>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-4">
+                                                    <h5>Data Management</h5>
+                                                    <div class="mb-3">
+                                                        <label for="dataPurgeDays" class="form-label">Purge Inactive Data After (days)</label>
+                                                        <input type="number" class="form-control" id="dataPurgeDays" value="365">
+                                                        <small class="text-muted">Old appointments and inactive accounts will be automatically deleted after this period.</small>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="dataExport" class="form-label">Export System Data</label>
+                                                        <div>
+                                                            <button type="button" class="btn btn-outline-primary">Export Data</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="dataBackup" class="form-label">System Backup</label>
+                                                        <div>
+                                                            <button type="button" class="btn btn-outline-primary">Backup Now</button>
+                                                        </div>
+                                                        <small class="text-muted">Last backup: 2023-04-15 09:30:22</small>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-4">
+                                                    <h5>Danger Zone</h5>
+                                                    <div class="card border-danger mb-3">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title text-danger">Reset System</h6>
+                                                            <p class="card-text">This will reset all system settings to default values. This action cannot be undone.</p>
+                                                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">Reset System</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Reset Confirmation Modal -->
+    <div class="modal fade" id="resetConfirmModal" tabindex="-1" aria-labelledby="resetConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resetConfirmModalLabel">Confirm System Reset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to reset all system settings to their default values? This action cannot be undone.</p>
+                    <div class="mb-3">
+                        <label for="resetConfirmation" class="form-label">Type "RESET" to confirm</label>
+                        <input type="text" class="form-control" id="resetConfirmation">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmResetBtn" disabled>Reset System</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Common JS -->
+    <script src="../../assets/js/common.js"></script>
+    <!-- Admin specific JS -->
+    <script src="../../assets/js/admin.js"></script>
+    <!-- Settings specific JS -->
+    <script src="../../assets/js/admin-settings.js"></script>
+</body>
+</html> 

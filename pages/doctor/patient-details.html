@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../../assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>MedBuddy</h3>
+            </div>
+            <div id="sidebarContent"></div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-link">
+                        <span class="material-icons">menu</span>
+                    </button>
+                    <span class="navbar-brand mb-0 h1">Patient Details</span>
+                    <div class="ms-auto">
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle text-dark" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <span id="userName">Doctor Name</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><a class="dropdown-item" href="#">Notifications</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- Main Content -->
+            <div class="container-fluid py-4">
+                <!-- Patient Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Patient Information</h5>
+                            <div>
+                                <button class="btn btn-outline-primary" id="backButton">
+                                    <span class="material-icons align-text-bottom me-1">arrow_back</span>
+                                    Back to Patient List
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center mb-3">
+                                    <img src="D:\Xampp\htdocs\Medbuddy\assets\images\avatars\patient-avatar.png" alt="Patient Profile" class="rounded-circle img-fluid" style="width: 150px; height: 150px;">
+                                </div>
+                                <div class="text-center">
+                                    <h4 id="patientName">Patient Name</h4>
+                                    <p class="text-muted mb-1" id="patientId">ID: PAT-001</p>
+                                    <p class="text-muted mb-1" id="patientAge">42 years, Male</p>
+                                    <p class="text-muted mb-1" id="patientEmail">patient@example.com</p>
+                                    <p class="text-muted mb-3" id="patientPhone">(123) 456-7890</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button class="btn btn-primary" id="scheduleAppointmentBtn">
+                                            <span class="material-icons align-text-bottom me-1">event</span>
+                                            Schedule
+                                        </button>
+                                        <button class="btn btn-outline-primary" id="sendMessageBtn">
+                                            <span class="material-icons align-text-bottom me-1">message</span>
+                                            Message
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <ul class="nav nav-tabs" id="patientDetailTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab">Summary</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="medical-tab" data-bs-toggle="tab" data-bs-target="#medical" type="button" role="tab">Medical History</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments" type="button" role="tab">Appointments</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab">Notes</button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content p-3 border border-top-0 rounded-bottom" id="patientDetailTabsContent">
+                                    <!-- Summary Tab -->
+                                    <div class="tab-pane fade show active" id="summary" role="tabpanel">
+                                        <h6 class="text-primary">Medical Summary</h6>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <p><strong>Blood Type:</strong> <span id="bloodType">A+</span></p>
+                                                <p><strong>Height:</strong> <span id="height">180 cm</span></p>
+                                                <p><strong>Weight:</strong> <span id="weight">75 kg</span></p>
+                                                <p><strong>BMI:</strong> <span id="bmi">23.1</span></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><strong>Last Visit:</strong> <span id="lastVisit">May 15, 2023</span></p>
+                                                <p><strong>Next Appointment:</strong> <span id="nextAppointment">June 20, 2023</span></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <h6 class="text-primary mt-4">Conditions</h6>
+                                        <div id="conditionsList" class="mb-3">
+                                            <span class="badge bg-info me-2 mb-2">Hypertension</span>
+                                            <span class="badge bg-info me-2 mb-2">Type 2 Diabetes</span>
+                                        </div>
+                                        
+                                        <h6 class="text-primary mt-4">Allergies</h6>
+                                        <div id="allergiesList" class="mb-3">
+                                            <span class="badge bg-warning text-dark me-2 mb-2">Penicillin</span>
+                                            <span class="badge bg-warning text-dark me-2 mb-2">Peanuts</span>
+                                        </div>
+                                        
+                                        <h6 class="text-primary mt-4">Current Medications</h6>
+                                        <ul id="medicationsList" class="mb-3">
+                                            <li>Lisinopril 10mg (once daily)</li>
+                                            <li>Metformin 500mg (twice daily)</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Medical History Tab -->
+                                    <div class="tab-pane fade" id="medical" role="tabpanel">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Type</th>
+                                                        <th>Description</th>
+                                                        <th>Doctor</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="medicalHistoryTable">
+                                                    <!-- Will be populated by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Appointments Tab -->
+                                    <div class="tab-pane fade" id="appointments" role="tabpanel">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date & Time</th>
+                                                        <th>Purpose</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="appointmentsTable">
+                                                    <!-- Will be populated by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Notes Tab -->
+                                    <div class="tab-pane fade" id="notes" role="tabpanel">
+                                        <div class="mb-3">
+                                            <label for="doctorNotes" class="form-label">Doctor's Notes</label>
+                                            <textarea class="form-control" id="doctorNotes" rows="5" placeholder="Add notes about this patient..."></textarea>
+                                        </div>
+                                        <button class="btn btn-primary" id="saveNotesBtn">
+                                            <span class="material-icons align-text-bottom me-1">save</span>
+                                            Save Notes
+                                        </button>
+                                        
+                                        <h6 class="text-primary mt-4">Previous Notes</h6>
+                                        <div id="previousNotesList">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Appointment Modal -->
+    <div class="modal fade" id="scheduleAppointmentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleAppointmentForm">
+                        <div class="mb-3">
+                            <label class="form-label">Patient Name</label>
+                            <input type="text" class="form-control" id="appointmentPatientName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" id="appointmentDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Time</label>
+                            <input type="time" class="form-control" id="appointmentTime" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Purpose</label>
+                            <textarea class="form-control" id="appointmentPurpose" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="appointmentNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveAppointment">Schedule</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Send Message Modal -->
+    <div class="modal fade" id="sendMessageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Send Message to Patient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="sendMessageForm">
+                        <div class="mb-3">
+                            <label class="form-label">Patient Name</label>
+                            <input type="text" class="form-control" id="messagePatientName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="messageSubject" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" id="messageBody" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="urgentMessage">
+                                <label class="form-check-label" for="urgentMessage">
+                                    Mark as Urgent
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="sendMessage">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical History Detail Modal -->
+    <div class="modal fade" id="medicalHistoryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Medical Record Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="medicalHistoryModalBody">
+                    <!-- Will be populated by JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="printMedicalRecord">
+                        <span class="material-icons align-text-bottom me-1">print</span>
+                        Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Common JS -->
+    <script src="../../assets/js/common.js"></script>
+    <!-- Doctor specific JS -->
+    <script src="../../assets/js/doctor.js"></script>
+    <!-- Patient Details JS -->
+    <script src="../../assets/js/patient-details.js"></script>
+</body>
+</html> 

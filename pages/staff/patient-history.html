@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Medical History - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-md-block" id="sidebar">
+                <div class="d-flex justify-content-between align-items-center py-3 px-3 border-bottom">
+                    <h5 class="m-0 fw-bold text-primary">MedBuddy</h5>
+                    <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+                <div class="collapse d-md-block" id="sidebarMenu">
+                    <div class="pt-3" id="sidebarContent">
+                        <!-- Sidebar menu items will be loaded here via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-md navbar-light bg-white mb-4 border-bottom">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">Patient Medical History</span>
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-decoration-none text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                    <span class="material-icons me-2">account_circle</span>
+                                    <span id="userName">Assistant Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">person</span>Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">notifications</span>Notifications</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" id="logoutBtn"><span class="material-icons me-2">logout</span>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Patient History Content -->
+                <div class="container-fluid">
+                    <!-- Patient Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                            <span id="patientInitials">JS</span>
+                                        </div>
+                                        <div>
+                                            <h4 class="mb-0" id="patientName">John Smith</h4>
+                                            <p class="text-muted mb-0" id="patientId">ID: P12345</p>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <button class="btn btn-outline-primary" id="backToAppointmentsBtn">
+                                                <span class="material-icons align-middle me-1">arrow_back</span> Back to Appointments
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Patient Details -->
+                    <div class="row mb-4">
+                        <div class="col-lg-4 mb-4 mb-lg-0">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Personal Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <p><strong>Age:</strong> <span id="patientAge">45</span></p>
+                                        <p><strong>Date of Birth:</strong> <span id="patientDOB">15 May 1978</span></p>
+                                        <p><strong>Gender:</strong> <span id="patientGender">Male</span></p>
+                                        <p><strong>Blood Type:</strong> <span id="patientBloodType">O+</span></p>
+                                        <p><strong>Phone:</strong> <span id="patientPhone">555-123-4567</span></p>
+                                        <p><strong>Email:</strong> <span id="patientEmail">john@example.com</span></p>
+                                        <p><strong>Address:</strong> <span id="patientAddress">123 Main St, Anytown, USA</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mb-4 mb-lg-0">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Medical Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h6>Allergies</h6>
+                                        <ul id="allergiesList">
+                                            <li>Penicillin</li>
+                                            <li>Peanuts</li>
+                                        </ul>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Chronic Conditions</h6>
+                                        <ul id="conditionsList">
+                                            <li>Hypertension (diagnosed 2015)</li>
+                                            <li>Type 2 Diabetes (diagnosed 2018)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Current Medications</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul id="medicationsList">
+                                        <li>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Lisinopril 10mg</span>
+                                                <small class="text-muted">Once daily</small>
+                                            </div>
+                                            <small class="text-muted d-block">For hypertension</small>
+                                        </li>
+                                        <li class="mt-2">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Metformin 500mg</span>
+                                                <small class="text-muted">Twice daily</small>
+                                            </div>
+                                            <small class="text-muted d-block">For diabetes</small>
+                                        </li>
+                                        <li class="mt-2">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Atorvastatin 20mg</span>
+                                                <small class="text-muted">Once daily</small>
+                                            </div>
+                                            <small class="text-muted d-block">For cholesterol</small>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Consultation History -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Consultation History</h5>
+                                    <div>
+                                        <input type="text" class="form-control form-control-sm" id="historySearchInput" placeholder="Search consultations...">
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Clinic</th>
+                                                    <th>Doctor</th>
+                                                    <th>Purpose</th>
+                                                    <th>Tests & Results</th>
+                                                    <th>Prescriptions</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="consultationHistoryList">
+                                                <!-- Will be populated via JS -->
+                                                <tr>
+                                                    <td>15 Mar 2023</td>
+                                                    <td>Heart Care Center</td>
+                                                    <td>Dr. Sarah Johnson</td>
+                                                    <td>Regular check-up</td>
+                                                    <td>ECG, Blood pressure</td>
+                                                    <td>Lisinopril (refill)</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-consultation" data-id="c1">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>20 Dec 2022</td>
+                                                    <td>General Health Clinic</td>
+                                                    <td>Dr. James Miller</td>
+                                                    <td>Diabetes follow-up</td>
+                                                    <td>Blood glucose, HbA1c</td>
+                                                    <td>Metformin (refill)</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-consultation" data-id="c2">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>05 Sep 2022</td>
+                                                    <td>Heart Care Center</td>
+                                                    <td>Dr. Sarah Johnson</td>
+                                                    <td>Chest pain</td>
+                                                    <td>Stress test, Echocardiogram</td>
+                                                    <td>Atorvastatin (new)</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-consultation" data-id="c3">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lab Results History -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Lab Tests & Results</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Test Type</th>
+                                                    <th>Clinic</th>
+                                                    <th>Results</th>
+                                                    <th>Reference Range</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="labResultsList">
+                                                <!-- Will be populated via JS -->
+                                                <tr>
+                                                    <td>15 Mar 2023</td>
+                                                    <td>Blood Pressure</td>
+                                                    <td>Heart Care Center</td>
+                                                    <td>135/85 mmHg</td>
+                                                    <td>120/80 mmHg</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-lab-result" data-id="l1">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>15 Mar 2023</td>
+                                                    <td>ECG</td>
+                                                    <td>Heart Care Center</td>
+                                                    <td>Normal sinus rhythm</td>
+                                                    <td>-</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-lab-result" data-id="l2">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>20 Dec 2022</td>
+                                                    <td>Blood Glucose (Fasting)</td>
+                                                    <td>General Health Clinic</td>
+                                                    <td>142 mg/dL</td>
+                                                    <td>70-100 mg/dL</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-lab-result" data-id="l3">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>20 Dec 2022</td>
+                                                    <td>HbA1c</td>
+                                                    <td>General Health Clinic</td>
+                                                    <td>7.2%</td>
+                                                    <td>&lt;6.5%</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-lab-result" data-id="l4">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Prescription History -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Prescription History</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Medication</th>
+                                                    <th>Dosage</th>
+                                                    <th>Instructions</th>
+                                                    <th>Doctor</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="prescriptionsList">
+                                                <!-- Will be populated via JS -->
+                                                <tr>
+                                                    <td>15 Mar 2023</td>
+                                                    <td>Lisinopril</td>
+                                                    <td>10 mg</td>
+                                                    <td>Take once daily with water</td>
+                                                    <td>Dr. Sarah Johnson</td>
+                                                    <td><span class="badge bg-success">Active</span></td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-prescription" data-id="p1">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>20 Dec 2022</td>
+                                                    <td>Metformin</td>
+                                                    <td>500 mg</td>
+                                                    <td>Take twice daily with meals</td>
+                                                    <td>Dr. James Miller</td>
+                                                    <td><span class="badge bg-success">Active</span></td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-prescription" data-id="p2">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>05 Sep 2022</td>
+                                                    <td>Atorvastatin</td>
+                                                    <td>20 mg</td>
+                                                    <td>Take once daily in the evening</td>
+                                                    <td>Dr. Sarah Johnson</td>
+                                                    <td><span class="badge bg-success">Active</span></td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary view-prescription" data-id="p3">
+                                                            <span class="material-icons">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- View Consultation Modal -->
+    <div class="modal fade" id="viewConsultationModal" tabindex="-1" aria-labelledby="viewConsultationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewConsultationModalLabel">Consultation Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Date:</strong> <span id="modalConsultDate">15 Mar 2023</span></p>
+                            <p><strong>Clinic:</strong> <span id="modalConsultClinic">Heart Care Center</span></p>
+                            <p><strong>Doctor:</strong> <span id="modalConsultDoctor">Dr. Sarah Johnson</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Chief Complaint:</strong> <span id="modalConsultComplaint">Regular check-up</span></p>
+                            <p><strong>Visit Type:</strong> <span id="modalConsultType">Follow-up</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Symptoms & History</h6>
+                        <p id="modalConsultSymptoms">Patient reports occasional chest pain and shortness of breath, particularly after physical exertion. No significant changes since last visit 6 months ago.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Vital Signs</h6>
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted d-block">Blood Pressure</small>
+                                <span id="modalConsultBP">135/85 mmHg</span>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted d-block">Heart Rate</small>
+                                <span id="modalConsultHR">78 bpm</span>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted d-block">Temperature</small>
+                                <span id="modalConsultTemp">98.6 °F</span>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted d-block">Weight</small>
+                                <span id="modalConsultWeight">185 lbs</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Examination Findings</h6>
+                        <p id="modalConsultFindings">Cardiovascular exam reveals regular rate and rhythm. No murmurs, gallops, or rubs. Lungs clear to auscultation bilaterally. No peripheral edema.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Tests Ordered</h6>
+                        <ul id="modalConsultTests">
+                            <li>ECG - Results: Normal sinus rhythm, no evidence of ischemia</li>
+                            <li>Blood Pressure Monitoring - Results: Slightly elevated at 135/85 mmHg</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Diagnosis</h6>
+                        <p id="modalConsultDiagnosis">1. Essential (primary) hypertension, controlled<br>2. Type 2 diabetes mellitus, controlled</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Treatment Plan</h6>
+                        <p id="modalConsultTreatment">Continue current medications: Lisinopril 10mg daily, Metformin 500mg twice daily, and Atorvastatin 20mg daily. Monitor blood pressure at home. Follow low-sodium diet and regular exercise program.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Prescriptions</h6>
+                        <ul id="modalConsultPrescriptions">
+                            <li>Lisinopril 10mg - Once daily - 30 day supply with 3 refills</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Follow-up</h6>
+                        <p id="modalConsultFollowup">Return in 6 months for routine follow-up. Sooner if symptoms worsen.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary print-consultation">
+                        <span class="material-icons align-middle me-1">print</span> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- View Lab Result Modal -->
+    <div class="modal fade" id="viewLabResultModal" tabindex="-1" aria-labelledby="viewLabResultModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewLabResultModalLabel">Lab Result Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p><strong>Test Date:</strong> <span id="modalLabDate">15 Mar 2023</span></p>
+                        <p><strong>Test Name:</strong> <span id="modalLabName">Blood Pressure</span></p>
+                        <p><strong>Clinic:</strong> <span id="modalLabClinic">Heart Care Center</span></p>
+                        <p><strong>Ordering Doctor:</strong> <span id="modalLabDoctor">Dr. Sarah Johnson</span></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Results</h6>
+                        <div id="modalLabResults">
+                            <p><strong>Reading:</strong> 135/85 mmHg</p>
+                            <p><strong>Reference Range:</strong> 120/80 mmHg</p>
+                            <p><strong>Status:</strong> <span class="text-warning">Slightly Elevated</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Notes</h6>
+                        <p id="modalLabNotes">Recommend continued monitoring and medication compliance. Consider lifestyle modifications.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary print-lab-result">
+                        <span class="material-icons align-middle me-1">print</span> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- View Prescription Modal -->
+    <div class="modal fade" id="viewPrescriptionModal" tabindex="-1" aria-labelledby="viewPrescriptionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewPrescriptionModalLabel">Prescription Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p><strong>Prescribed Date:</strong> <span id="modalPrescDate">15 Mar 2023</span></p>
+                        <p><strong>Prescribed By:</strong> <span id="modalPrescDoctor">Dr. Sarah Johnson</span></p>
+                        <p><strong>Clinic:</strong> <span id="modalPrescClinic">Heart Care Center</span></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Medication Information</h6>
+                        <p><strong>Medication:</strong> <span id="modalPrescMed">Lisinopril</span></p>
+                        <p><strong>Dosage:</strong> <span id="modalPrescDosage">10 mg tablets</span></p>
+                        <p><strong>Quantity:</strong> <span id="modalPrescQuantity">30 tablets</span></p>
+                        <p><strong>Instructions:</strong> <span id="modalPrescInstructions">Take one tablet by mouth once daily with water</span></p>
+                        <p><strong>Refills:</strong> <span id="modalPrescRefills">3 refills (90 days)</span></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Status</h6>
+                        <p><span id="modalPrescStatus" class="badge bg-success">Active</span></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Special Instructions</h6>
+                        <p id="modalPrescSpecial">Monitor blood pressure regularly. May cause dizziness, especially when standing up quickly.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary print-prescription">
+                        <span class="material-icons align-middle me-1">print</span> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Common JS -->
+    <script src="../../assets/js/common.js"></script>
+    <!-- Assistant specific JS -->
+    <script src="../../assets/js/assistant.js"></script>
+    <!-- Patient history JS -->
+    <script src="../../assets/js/patient-history.js"></script>
+</body>
+</html> 

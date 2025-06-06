@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Management - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-md-block" id="sidebar">
+                <div class="d-flex justify-content-between align-items-center py-3 px-3 border-bottom">
+                    <h5 class="m-0 fw-bold text-primary">MedBuddy</h5>
+                    <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+                <div class="collapse d-md-block" id="sidebarMenu">
+                    <div class="pt-3" id="sidebarContent">
+                        <!-- Sidebar menu items will be loaded here via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-md navbar-light bg-white mb-4 border-bottom">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">Account Management</span>
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-decoration-none text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                    <span class="material-icons me-2">account_circle</span>
+                                    <span id="userName">Admin User</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">person</span>Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">settings</span>Settings</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" id="logoutBtn"><span class="material-icons me-2">logout</span>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Account Management Content -->
+                <div class="container-fluid">
+                    <!-- Filter and Search -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-4 col-md-6 mb-2 mb-md-0">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><span class="material-icons">search</span></span>
+                                                <input type="text" class="form-control" id="searchInput" placeholder="Search users...">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-2 mb-lg-0">
+                                            <select class="form-select" id="roleFilter">
+                                                <option value="all" selected>All Roles</option>
+                                                <option value="admin">Admin</option>
+                                                <option value="doctor">Doctor</option>
+                                                <option value="assistant">Assistant</option>
+                                                <option value="patient">Patient</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-2 mb-lg-0">
+                                            <select class="form-select" id="statusFilter">
+                                                <option value="all" selected>All Status</option>
+                                                <option value="approved">Approved</option>
+                                                <option value="pending">Pending</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <button class="btn btn-primary w-100" id="addUserBtn" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                                <span class="material-icons align-middle me-1">add</span> New User
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Approvals Section -->
+                    <div class="row mb-4" id="pendingApprovalsSection">
+                        <div class="col-12">
+                            <div class="table-container">
+                                <h3 class="table-title">Pending Approvals</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Date Registered</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pendingApprovalsList">
+                                            <!-- Data will be loaded via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- All Accounts Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="table-container">
+                                <h3 class="table-title">All Accounts</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Status</th>
+                                                <th>Date Registered</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="accountsList">
+                                            <!-- Data will be loaded via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="role" class="form-label">Role</label>
+                                <select class="form-select" id="role" required>
+                                    <option value="" selected disabled>Select role</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="doctor">Doctor</option>
+                                    <option value="assistant">Assistant</option>
+                                    <option value="patient">Patient</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Role-specific fields -->
+                        <div id="doctorFields" class="d-none">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="specialization" class="form-label">Specialization</label>
+                                    <input type="text" class="form-control" id="specialization">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="clinicName" class="form-label">Clinic Name</label>
+                                    <select class="form-select" id="clinicName">
+                                        <option value="" selected disabled>Select clinic</option>
+                                        <option value="Clinic X">Clinic X</option>
+                                        <option value="Clinic Y">Clinic Y</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="assistantFields" class="d-none">
+                            <div class="mb-3">
+                                <label for="assignedDoctor" class="form-label">Assigned Doctor</label>
+                                <select class="form-select" id="assignedDoctor">
+                                    <option value="" selected disabled>Select doctor</option>
+                                    <!-- Options will be populated via JS -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="patientFields" class="d-none">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="dob" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="dob">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="approvedStatus" checked>
+                            <label class="form-check-label" for="approvedStatus">Approve account immediately</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveUserBtn">Save User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editFirstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="editFirstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editLastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="editLastName" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" required>
+                        </div>
+                        
+                        <!-- Role-specific fields -->
+                        <div id="editDoctorFields" class="d-none">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="editSpecialization" class="form-label">Specialization</label>
+                                    <input type="text" class="form-control" id="editSpecialization">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="editClinicName" class="form-label">Clinic Name</label>
+                                    <select class="form-select" id="editClinicName">
+                                        <option value="" selected disabled>Select clinic</option>
+                                        <option value="Clinic X">Clinic X</option>
+                                        <option value="Clinic Y">Clinic Y</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="editAssistantFields" class="d-none">
+                            <div class="mb-3">
+                                <label for="editAssignedDoctor" class="form-label">Assigned Doctor</label>
+                                <select class="form-select" id="editAssignedDoctor">
+                                    <option value="" selected disabled>Select doctor</option>
+                                    <!-- Options will be populated via JS -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="editPatientFields" class="d-none">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="editDob" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="editDob">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="editPhone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="editPhone">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="editApprovedStatus">
+                            <label class="form-check-label" for="editApprovedStatus">Account approved</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="updateUserBtn">Update User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Common JS -->
+    <script src="../../assets/js/common.js"></script>
+    <!-- Admin specific JS -->
+    <script src="../../assets/js/admin.js"></script>
+    <!-- Accounts Management JS -->
+    <script src="../../assets/js/admin-accounts.js"></script>
+</body>
+</html> 
