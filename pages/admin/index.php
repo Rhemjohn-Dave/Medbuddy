@@ -41,6 +41,11 @@ $sidebar_menu = [
         'label' => 'Reports'
     ],
     [
+        'page' => 'messages',
+        'icon' => 'message',
+        'label' => 'Messages'
+    ],
+    [
         'page' => 'settings',
         'icon' => 'settings',
         'label' => 'Settings'

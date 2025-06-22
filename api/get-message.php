@@ -47,12 +47,14 @@ try {
             WHEN u_sender.role = 'doctor' THEN d.first_name 
             WHEN u_sender.role = 'patient' THEN p.first_name 
             WHEN u_sender.role = 'staff' THEN s.first_name
+            WHEN u_sender.role = 'admin' THEN u_sender.username
             ELSE NULL 
         END as sender_first_name,
         CASE 
             WHEN u_sender.role = 'doctor' THEN d.last_name 
             WHEN u_sender.role = 'patient' THEN p.last_name 
             WHEN u_sender.role = 'staff' THEN s.last_name
+            WHEN u_sender.role = 'admin' THEN ''
             ELSE NULL 
         END as sender_last_name
         FROM messages m
@@ -74,7 +76,11 @@ try {
     }
 
     // Format message data
-    $message['sender_name'] = $message['sender_first_name'] . ' ' . $message['sender_last_name'];
+    $sender_name = $message['sender_first_name'];
+    if (!empty($message['sender_last_name'])) {
+        $sender_name .= ' ' . $message['sender_last_name'];
+    }
+    $message['sender_name'] = $sender_name;
     $message['created_at'] = date('M d, Y h:i A', strtotime($message['created_at']));
 
     echo json_encode(['success' => true, 'message' => $message]);

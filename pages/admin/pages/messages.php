@@ -1,6 +1,9 @@
 <?php
 require_once '../../config/database.php';
 
+// Define the base URL for API endpoints
+$base_url = '/Medbuddy';
+
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../../auth/index.php");
@@ -11,75 +14,79 @@ try {
     $db = new Database();
     $conn = $db->getConnection();
 
-    // Get user's messages
-    // Get inbox messages
-    $inbox_sql = "SELECT m.*, 
+    $user_id = $_SESSION['user_id'];
+
+    // Fetch messages and group them by conversation partner
+    // This query gets the latest message for each conversation thread
+    $latest_messages_sql = "
+        SELECT m.*,
         u_sender.username as sender_username,
         u_sender.role as sender_role,
         CASE 
             WHEN u_sender.role = 'doctor' THEN d.first_name 
-            WHEN u_sender.role = 'patient' THEN p.first_name 
+            WHEN u_sender.role = 'patient' THEN p_sender.first_name 
             WHEN u_sender.role = 'staff' THEN s.first_name
+            WHEN u_sender.role = 'admin' THEN u_sender.username
             ELSE NULL 
         END as sender_first_name,
         CASE 
             WHEN u_sender.role = 'doctor' THEN d.last_name 
-            WHEN u_sender.role = 'patient' THEN p.last_name 
+            WHEN u_sender.role = 'patient' THEN p_sender.last_name 
             WHEN u_sender.role = 'staff' THEN s.last_name
+            WHEN u_sender.role = 'admin' THEN ''
             ELSE NULL 
-        END as sender_last_name
-        FROM messages m
-        JOIN users u_sender ON m.sender_id = u_sender.id
-        LEFT JOIN doctors d ON u_sender.id = d.user_id 
-        LEFT JOIN patients p ON u_sender.id = p.user_id 
-        LEFT JOIN staff s ON u_sender.id = s.user_id 
-        WHERE m.receiver_id = ?
-        ORDER BY m.created_at DESC";
-    
-    $inbox_stmt = $conn->prepare($inbox_sql);
-    $inbox_stmt->execute([$_SESSION['user_id']]);
-    $inbox_messages = $inbox_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Get sent messages
-    $sent_sql = "SELECT m.*, 
+        END as sender_last_name,
         u_receiver.username as receiver_username,
         u_receiver.role as receiver_role,
         CASE 
-            WHEN u_receiver.role = 'doctor' THEN d.first_name 
-            WHEN u_receiver.role = 'patient' THEN p.first_name 
-            WHEN u_receiver.role = 'staff' THEN s.first_name
+            WHEN u_receiver.role = 'doctor' THEN d2.first_name 
+            WHEN u_receiver.role = 'patient' THEN p_receiver.first_name 
+            WHEN u_receiver.role = 'staff' THEN s2.first_name
+            WHEN u_receiver.role = 'admin' THEN u_receiver.username
             ELSE NULL 
         END as receiver_first_name,
         CASE 
-            WHEN u_receiver.role = 'doctor' THEN d.last_name 
-            WHEN u_receiver.role = 'patient' THEN p.last_name 
-            WHEN u_receiver.role = 'staff' THEN s.last_name
+            WHEN u_receiver.role = 'doctor' THEN d2.last_name 
+            WHEN u_receiver.role = 'patient' THEN p_receiver.last_name 
+            WHEN u_receiver.role = 'staff' THEN s2.last_name
+            WHEN u_receiver.role = 'admin' THEN ''
             ELSE NULL 
         END as receiver_last_name
         FROM messages m
+        JOIN users u_sender ON m.sender_id = u_sender.id
         JOIN users u_receiver ON m.receiver_id = u_receiver.id
-        LEFT JOIN doctors d ON u_receiver.id = d.user_id 
-        LEFT JOIN patients p ON u_receiver.id = p.user_id 
-        LEFT JOIN staff s ON u_receiver.id = s.user_id 
-        WHERE m.sender_id = ?
+        LEFT JOIN doctors d ON u_sender.id = d.user_id 
+        LEFT JOIN patients p_sender ON u_sender.id = p_sender.user_id 
+        LEFT JOIN staff s ON u_sender.id = s.user_id 
+        LEFT JOIN doctors d2 ON u_receiver.id = d2.user_id 
+        LEFT JOIN patients p_receiver ON u_receiver.id = p_receiver.user_id 
+        LEFT JOIN staff s2 ON u_receiver.id = s2.user_id 
+        WHERE m.id IN (
+            SELECT MAX(id)
+            FROM messages
+            WHERE sender_id = ? OR receiver_id = ?
+            GROUP BY LEAST(sender_id, receiver_id), GREATEST(sender_id, receiver_id)
+        )
         ORDER BY m.created_at DESC";
     
-    $sent_stmt = $conn->prepare($sent_sql);
-    $sent_stmt->execute([$_SESSION['user_id']]);
-    $sent_messages = $sent_stmt->fetchAll(PDO::FETCH_ASSOC);
+    $latest_messages_stmt = $conn->prepare($latest_messages_sql);
+    $latest_messages_stmt->execute([$user_id, $user_id]);
+    $latest_messages = $latest_messages_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get users for recipient selection
+     // Get users for recipient selection in compose modal
     $users_sql = "SELECT u.id, u.username, u.role,
         CASE 
             WHEN u.role = 'doctor' THEN d.first_name 
             WHEN u.role = 'patient' THEN p.first_name 
             WHEN u.role = 'staff' THEN s.first_name
+            WHEN u.role = 'admin' THEN u.username
             ELSE NULL 
         END as first_name,
         CASE 
             WHEN u.role = 'doctor' THEN d.last_name 
             WHEN u.role = 'patient' THEN p.last_name 
             WHEN u.role = 'staff' THEN s.last_name
+            WHEN u.role = 'admin' THEN ''
             ELSE NULL 
         END as last_name
         FROM users u
@@ -95,6 +102,8 @@ try {
 
 } catch (Exception $e) {
     error_log("Error fetching messages: " . $e->getMessage());
+    $latest_messages = [];
+     $users = [];
 }
 ?>
 
@@ -106,112 +115,97 @@ try {
 
 <body>
 <div class="container-fluid py-4">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Messages</h4>
-        <button type="button" class="btn btn-primary" onclick="openComposeModal()">
+    <div class="row g-4">
+        <!-- Left Message Panel -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Messages</h5>
+                    <div>
+                         <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="location.reload()">
+                             <i class="material-icons align-middle">refresh</i>
+                         </button>
+                        <button type="button" class="btn btn-primary btn-sm" id="composeNewBtn">
             <i class="material-icons align-middle me-1">add</i>
-            New Message
+                            Compose New
         </button>
     </div>
-
-    <!-- Messages Tabs -->
-    <div class="card">
-        <div class="card-body">
-            <ul class="nav nav-tabs" id="messagesTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="inbox-tab" data-bs-toggle="tab" data-bs-target="#inbox" type="button" role="tab">
-                        Inbox
-                        <?php if (count(array_filter($inbox_messages, fn($m) => !$m['is_read'])) > 0): ?>
-                            <span class="badge bg-danger ms-1"><?php echo count(array_filter($inbox_messages, fn($m) => !$m['is_read'])); ?></span>
+                </div>
+                 <div class="card-body p-2">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="messageSearch" placeholder="Search messages...">
+                    </div>
+                    <div id="messageThreads" class="list-group list-group-flush">
+                        <?php if (empty($latest_messages)): ?>
+                            <div class="text-center text-muted py-4">
+                                <span class="material-icons mb-2" style="font-size: 2rem;">mail_outline</span>
+                                <p class="mb-0">No messages yet.</p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($latest_messages as $message): ?>
+                                <?php
+                                    // Determine the conversation partner (the user who is not the current user)
+                                    $partner_id = ($message['sender_id'] == $user_id) ? $message['receiver_id'] : $message['sender_id'];
+                                    
+                                    // Handle display names properly for admin users
+                                    $partner_name = '';
+                                    if ($message['sender_id'] == $user_id) {
+                                        $partner_name = $message['receiver_first_name'];
+                                        if (!empty($message['receiver_last_name'])) {
+                                            $partner_name .= ' ' . $message['receiver_last_name'];
+                                        }
+                                    } else {
+                                        $partner_name = $message['sender_first_name'];
+                                        if (!empty($message['sender_last_name'])) {
+                                            $partner_name .= ' ' . $message['sender_last_name'];
+                                        }
+                                    }
+                                    
+                                     $partner_role = ($message['sender_id'] == $user_id) ? 
+                                                        ucfirst($message['receiver_role']) : 
+                                                        ucfirst($message['sender_role']);
+                                    
+                                    // Highlight if the latest message in the thread is unread and sent by the partner
+                                     $is_unread_latest = ($message['receiver_id'] == $user_id && !$message['is_read']);
+                                ?>
+                                <a href="#" class="list-group-item list-group-item-action <?php echo $is_unread_latest ? 'bg-light fw-bold' : ''; ?>" 
+                                   data-partner-id="<?php echo $partner_id; ?>">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1 <?php echo $is_unread_latest ? 'text-primary' : ''; ?>">
+                                            <?php echo htmlspecialchars($partner_name); ?>
+                                        </h6>
+                                        <small class="text-muted"><?php echo date('M d, Y h:i A', strtotime($message['created_at'])); ?></small>
+                                    </div>
+                                    <p class="mb-1 text-muted"><?php echo htmlspecialchars(substr($message['message'], 0, 50)) . (strlen($message['message']) > 50 ? '...' : ''); ?></p>
+                                     <small class="text-muted"><?php echo $partner_role; ?></small>
+                                </a>
+                            <?php endforeach; ?>
                         <?php endif; ?>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">Sent</button>
-                </li>
-            </ul>
-
-            <div class="tab-content mt-3" id="messagesTabContent">
-                <!-- Inbox Tab -->
-                <div class="tab-pane fade show active" id="inbox" role="tabpanel">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>From</th>
-                                    <th>Subject</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($inbox_messages as $message): ?>
-                                    <tr class="<?php echo !$message['is_read'] ? 'fw-bold' : ''; ?>">
-                                        <td>
-                                            <?php echo htmlspecialchars($message['sender_first_name'] . ' ' . $message['sender_last_name']); ?>
-                                            <br>
-                                            <small class="text-muted">
-                                                <?php echo ucfirst($message['sender_role']); ?>
-                                            </small>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($message['subject']); ?></td>
-                                        <td><?php echo date('M d, Y h:i A', strtotime($message['created_at'])); ?></td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                    onclick="viewMessage(<?php echo $message['id']; ?>)">
-                                                <i class="material-icons">visibility</i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="deleteMessage(<?php echo $message['id']; ?>)">
-                                                <i class="material-icons">delete</i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Sent Tab -->
-                <div class="tab-pane fade" id="sent" role="tabpanel">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>To</th>
-                                    <th>Subject</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($sent_messages as $message): ?>
-                                    <tr>
-                                        <td>
-                                            <?php echo htmlspecialchars($message['receiver_first_name'] . ' ' . $message['receiver_last_name']); ?>
-                                            <br>
-                                            <small class="text-muted">
-                                                <?php echo ucfirst($message['receiver_role']); ?>
-                                            </small>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($message['subject']); ?></td>
-                                        <td><?php echo date('M d, Y h:i A', strtotime($message['created_at'])); ?></td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                    onclick="viewMessage(<?php echo $message['id']; ?>)">
-                                                <i class="material-icons">visibility</i>
+        <!-- Right Chat Panel -->
+        <div class="col-md-8">
+            <div class="card h-100 d-flex flex-column">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0" id="chatPartnerName">Select a message to read</h5>
+                    <small class="text-muted" id="chatPartnerRole"></small>
+                </div>
+                <div class="card-body overflow-auto flex-grow-1" id="chatHistory">
+                    <!-- Chat messages will be loaded here -->
+                    <div class="text-center text-muted py-5">
+                        <span class="material-icons mb-2" style="font-size: 3rem;">forum</span>
+                        <p>Select a conversation from the left panel to view messages.</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="messageInput" placeholder="Type your message here...">
+                        <button class="btn btn-primary" type="button" id="sendMessageBtn">
+                            <i class="material-icons">send</i>
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="deleteMessage(<?php echo $message['id']; ?>)">
-                                                <i class="material-icons">delete</i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -235,8 +229,13 @@ try {
                             <option value="">Select Recipient</option>
                             <?php foreach ($users as $user): ?>
                                 <option value="<?php echo $user['id']; ?>">
-                                    <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?> 
-                                    (<?php echo ucfirst($user['role']); ?>)
+                                    <?php 
+                                    $user_name = $user['first_name'];
+                                    if (!empty($user['last_name'])) {
+                                        $user_name .= ' ' . $user['last_name'];
+                                    }
+                                    echo htmlspecialchars($user_name . ' (' . ucfirst($user['role']) . ')');
+                                    ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -253,294 +252,406 @@ try {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="sendMessage()">Send Message</button>
+                <button type="button" class="btn btn-primary" id="sendComposeBtn">Send Message</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- View Message Modal -->
-<div class="modal fade" id="viewMessageModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Message</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="messageContent">
-                    <!-- Message content will be loaded here -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="replyToMessage()">Reply</button>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+.card {
+    transition: transform 0.2s;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+}
+
+.list-group-item-action {
+    cursor: pointer;
+}
+
+.list-group-item-action:hover {
+    background-color: #e9ecef;
+}
+
+.list-group-flush > .list-group-item {
+    border-width: 0 0 1px 0;
+}
+
+#messageThreads {
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+#chatHistory {
+    max-height: calc(100vh - 250px);
+    min-height: 400px;
+}
+
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.message-sent {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+}
+
+.message-received {
+    background-color: #e9e9eb;
+    align-self: flex-start;
+}
+
+.message-timestamp {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+</style>
 
 <script>
-// Define base URL for API endpoints - using absolute path
-const BASE_URL = window.location.origin + '/Medbuddy';
+document.addEventListener('DOMContentLoaded', function() {
+    let currentChatPartnerId = null;
+    let composeModal = null;
 
-function openComposeModal() {
-    const modal = new bootstrap.Modal(document.getElementById('composeModal'));
-    modal.show();
-}
-
-function viewMessage(messageId) {
-    // Show loading state
-    const modal = new bootstrap.Modal(document.getElementById('viewMessageModal'));
-    document.getElementById('messageContent').innerHTML = `
-        <div class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2 text-muted">Loading message...</p>
-        </div>
-    `;
-    modal.show();
-
-    // Log the URL for debugging
-    const url = `${BASE_URL}/api/get-message.php?id=${messageId}`;
-    console.log('Fetching from:', url);
-
-    fetch(url)
-        .then(async response => {
-            const data = await response.json();
-            console.log('Response data:', data); // Debug log
-            
-            if (!response.ok) {
-                if (data && data.error) {
-                    throw new Error(data.error);
-                }
-                throw new Error(`Server error (${response.status}): ${data.error || 'Unknown error'}`);
-            }
-            return data;
-        })
-        .then(data => {
-            // Check if we have a valid message object
-            if (data.success && data.message) {
-                const message = data.message;
-                // Format the date if it's not already formatted
-                const messageDate = new Date(message.created_at).toLocaleString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    hour12: true
-                });
-                
-                const content = `
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">From</label>
-                        <p class="mb-0 fw-bold">${message.sender_name || `${message.sender_first_name} ${message.sender_last_name}`}</p>
-                        <small class="text-muted">${message.sender_role}</small>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Subject</label>
-                        <p class="mb-0 fw-bold">${message.subject}</p>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Date</label>
-                        <p class="mb-0">${messageDate}</p>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Message</label>
-                        <p class="mb-0">${message.message}</p>
-                    </div>
-                `;
-                document.getElementById('messageContent').innerHTML = content;
-            } else {
-                throw new Error('Invalid message data received from server');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('messageContent').innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="material-icons align-middle me-2">error</i>
-                    <strong>Error loading message:</strong><br>
-                    ${error.message}
-                </div>
-            `;
-        });
-}
-
-function sendMessage() {
-    const form = document.getElementById('composeForm');
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    // Validate recipient
-    if (!data.receiver_id) {
-        Swal.fire({
-            title: 'Error!',
-            text: 'Please select a recipient',
-            icon: 'error',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#dc3545'
-        });
-        return;
+    // Initialize the compose modal
+    function initComposeModal() {
+        const modalElement = document.getElementById('composeModal');
+        if (modalElement) {
+            composeModal = new bootstrap.Modal(modalElement);
+        }
     }
-    
-    // Show loading state
-    const submitButton = document.querySelector('#composeModal .btn-primary');
-    const originalContent = submitButton.innerHTML;
-    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
-    submitButton.disabled = true;
 
-    fetch(`${BASE_URL}/api/send-message.php`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(async response => {
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to send message');
-        }
-        return data;
-    })
-    .then(result => {
-        if (result.success) {
-            // Close modal and show success message
-            const modal = bootstrap.Modal.getInstance(document.getElementById('composeModal'));
-            modal.hide();
-            
-            // Reset form
-            form.reset();
-            
-            Swal.fire({
-                title: 'Success!',
-                text: 'Message sent successfully',
-                icon: 'success',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745',
-                timer: 2000,
-                timerProgressBar: true,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
-        } else {
-            throw new Error(result.error || 'Failed to send message');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            title: 'Error!',
-            text: error.message,
-            icon: 'error',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#dc3545'
+    // Initialize modal on page load
+    initComposeModal();
+
+    // Add click handler for compose button
+    const composeNewBtn = document.getElementById('composeNewBtn');
+    if (composeNewBtn) {
+        composeNewBtn.addEventListener('click', function() {
+            if (!composeModal) {
+                initComposeModal();
+            }
+            if (composeModal) {
+                composeModal.show();
+            }
         });
-    })
-    .finally(() => {
-        // Reset button state
-        submitButton.innerHTML = originalContent;
-        submitButton.disabled = false;
-    });
-}
+    }
 
-function deleteMessage(messageId) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "This message will be permanently deleted!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`${BASE_URL}/api/delete-message.php`, {
+    // Handle sending new message from compose modal
+    const sendComposeBtn = document.getElementById('sendComposeBtn');
+    if (sendComposeBtn) {
+        sendComposeBtn.addEventListener('click', function() {
+            const form = document.getElementById('composeForm');
+            if (!form) return;
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Basic validation
+            if (!data.receiver_id || !data.subject || !data.message) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            
+            // Show loading indicator
+            const sendButton = this;
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
+
+            fetch('../../api/messages.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message_id: messageId })
+                body: JSON.stringify(data)
             })
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to delete message');
-                }
-                return data;
-            })
+            .then(response => response.json())
             .then(data => {
+                sendButton.disabled = false;
+                sendButton.innerHTML = 'Send Message';
                 if (data.success) {
                     Swal.fire({
-                        title: 'Deleted!',
-                        text: 'Message has been deleted.',
                         icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#28a745',
-                        timer: 2000,
-                        timerProgressBar: true,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload();
+                        title: 'Success!',
+                        text: 'Message sent successfully!',
+                        showConfirmButton: false,
+                        timer: 1500
                     });
+                    if (composeModal) {
+                        composeModal.hide();
+                    }
+                    form.reset();
+                    location.reload();
                 } else {
-                    throw new Error(data.error || 'Failed to delete message');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Error sending message: ' + (data.message || 'Unknown error')
+                    });
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                sendButton.disabled = false;
+                sendButton.innerHTML = 'Send Message';
+                console.error('Error sending message:', error);
                 Swal.fire({
-                    title: 'Error!',
-                    text: error.message,
                     icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#dc3545'
+                    title: 'Error!',
+                    text: 'An error occurred while sending the message: ' + error.message
                 });
             });
-        }
+        });
+    }
+
+    // Handle clicking on a message thread
+    document.querySelectorAll('#messageThreads .list-group-item-action').forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault();
+            const partnerId = this.dataset.partnerId;
+            const partnerName = this.querySelector('h6').textContent.trim();
+            const partnerRole = this.querySelector('small').textContent.trim();
+
+            // Remove active class from all threads and add to the clicked one
+            document.querySelectorAll('#messageThreads .list-group-item-action').forEach(thread => {
+                thread.classList.remove('active', 'bg-light', 'fw-bold');
+                thread.querySelector('h6').classList.remove('text-primary');
+            });
+            this.classList.add('active');
+            // Remove highlighting after clicking an unread message
+            this.classList.remove('bg-light', 'fw-bold');
+            this.querySelector('h6').classList.remove('text-primary');
+
+            // Update chat header
+            document.getElementById('chatPartnerName').textContent = partnerName;
+            document.getElementById('chatPartnerRole').textContent = partnerRole;
+
+            // Load chat history
+            currentChatPartnerId = partnerId;
+            loadChatHistory(partnerId);
+            
+            // Mark messages as read
+            markMessagesAsRead(partnerId);
+        });
     });
-}
 
-function replyToMessage() {
-    const messageContent = document.getElementById('messageContent');
-    if (!messageContent) {
-        console.error('Message content element not found');
-        return;
+    // Function to load chat history
+    function loadChatHistory(partnerId) {
+        const chatHistoryDiv = document.getElementById('chatHistory');
+        chatHistoryDiv.innerHTML = '<div class="text-center text-muted py-5"><span class="spinner-border text-primary"></span> Loading messages...</div>';
+
+        fetch(`../../api/messages.php?partner_id=${partnerId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                chatHistoryDiv.innerHTML = '';
+                if (data.success && data.messages.length > 0) {
+                    data.messages.forEach(message => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('d-flex', message.sender_id == <?php echo $user_id; ?> ? 'justify-content-end' : 'justify-content-start');
+                        
+                        messageElement.innerHTML = `
+                            <div>
+                                <div class="message-bubble ${message.sender_id == <?php echo $user_id; ?> ? 'message-sent' : 'message-received'}">
+                                    ${htmlspecialchars(message.message)}
+                                </div>
+                                <div class="message-timestamp text-end">
+                                    ${formatTimestamp(message.created_at)}
+                                </div>
+                            </div>
+                        `;
+                        chatHistoryDiv.appendChild(messageElement);
+                    });
+                    chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+                } else {
+                    chatHistoryDiv.innerHTML = '<div class="text-center text-muted py-5"><span class="material-icons mb-2" style="font-size: 3rem;">forum</span><p>No messages in this conversation.</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading chat history:', error);
+                chatHistoryDiv.innerHTML = '<div class="text-center text-danger py-5"><span class="material-icons mb-2" style="font-size: 3rem;">error_outline</span><p>Error loading messages.</p></div>';
+            });
     }
 
-    const senderElement = messageContent.querySelector('p.mb-0.fw-bold');
-    const subjectElement = messageContent.querySelectorAll('p.mb-0.fw-bold')[1];
-    
-    if (!senderElement || !subjectElement) {
-        console.error('Required message elements not found');
-        return;
+    // Function to mark messages as read
+    function markMessagesAsRead(partnerId) {
+        fetch(`../../api/messages.php?mark_read=${partnerId}`, {
+            method: 'PUT'
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => { throw new Error(data.message || `HTTP error! status: ${response.status}`); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log('Messages marked as read:', data.message);
+            } else {
+                console.error('Failed to mark messages as read.', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error marking messages as read:', error);
+        });
     }
 
-    const senderName = senderElement.textContent;
-    const subject = subjectElement.textContent;
-    
-    // Close view modal
-    const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewMessageModal'));
-    if (viewModal) {
-        viewModal.hide();
+    // Helper function to format timestamp
+    function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+
+        if (diffInSeconds < 60) {
+            return diffInSeconds + ' seconds ago';
+        } else if (diffInSeconds < 3600) {
+            return Math.floor(diffInSeconds / 60) + ' minutes ago';
+        } else if (diffInSeconds < 86400) {
+            return Math.floor(diffInSeconds / 3600) + ' hours ago';
+        } else if (diffInSeconds < 2592000) {
+            return Math.floor(diffInSeconds / 86400) + ' days ago';
+        } else {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
     }
-    
-    // Open compose modal
-    const composeModal = new bootstrap.Modal(document.getElementById('composeModal'));
-    
-    // Set reply subject
-    const subjectInput = document.querySelector('#composeForm input[name="subject"]');
-    if (subjectInput) {
-        subjectInput.value = `Re: ${subject}`;
+
+    // Helper function for HTML escaping
+    function htmlspecialchars(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>'"]/g, function(m) { return map[m]; });
     }
-    
-    // Show compose modal
-    composeModal.show();
-}
+
+    // Handle message input
+    const messageInput = document.getElementById('messageInput');
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+
+    if (messageInput && sendMessageBtn) {
+        // Send message on Enter key
+        messageInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessageBtn.click();
+            }
+        });
+
+        // Send message on button click
+        sendMessageBtn.addEventListener('click', function() {
+            const messageText = messageInput.value.trim();
+            if (messageText === '' || currentChatPartnerId === null) {
+                return;
+            }
+
+            const sendButton = this;
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            fetch('../../api/messages.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    receiver_id: currentChatPartnerId,
+                    subject: 'Regarding our conversation',
+                    message: messageText
+                })
+            })
+            .then(response => {
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="material-icons">send</i>';
+                if (!response.ok) {
+                    return response.json().then(data => { throw new Error(data.message || `HTTP error! status: ${response.status}`); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const chatHistoryDiv = document.getElementById('chatHistory');
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('d-flex', 'justify-content-end');
+                    messageElement.innerHTML = `
+                        <div>
+                            <div class="message-bubble message-sent">
+                                ${htmlspecialchars(messageText)}
+                            </div>
+                            <div class="message-timestamp text-end">
+                                ${formatTimestamp(new Date())}
+                            </div>
+                        </div>
+                    `;
+                    if (chatHistoryDiv.querySelector('.text-center.text-muted')) {
+                        chatHistoryDiv.innerHTML = '';
+                    }
+                    chatHistoryDiv.appendChild(messageElement);
+                    chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+                    messageInput.value = '';
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Message sent successfully!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                } else {
+                     Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Error sending message: ' + (data.message || 'Unknown error')
+                    });
+                }
+            })
+            .catch(error => {
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="material-icons">send</i>';
+                console.error('Error sending message:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while sending message: ' + error.message
+                });
+            });
+        });
+    }
+
+    // Handle message search
+    const messageSearch = document.getElementById('messageSearch');
+    if (messageSearch) {
+        messageSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            document.querySelectorAll('#messageThreads .list-group-item-action').forEach(item => {
+                const textContent = item.textContent.toLowerCase();
+                if (textContent.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+});
 </script> 
-</body>
-</html> 
