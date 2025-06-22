@@ -46,11 +46,6 @@ $sidebar_menu = [
         'label' => 'Schedule'
     ],
     [
-        'page' => 'prescriptions',
-        'icon' => 'medication',
-        'label' => 'Prescriptions'
-    ],
-    [
         'page' => 'messages',
         'icon' => 'message',
         'label' => 'Messages'
