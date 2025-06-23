@@ -19,6 +19,29 @@ if (!$appointment_id || !$status) {
     exit;
 }
 
+// If marking as no-show, check if 5 minutes have passed since appointment time
+if ($status === 'no-show') {
+    $check_query = "SELECT appointment_date, appointment_time, status FROM appointments WHERE id = :id";
+    $stmt = $conn->prepare($check_query);
+    $stmt->bindParam(':id', $appointment_id);
+    $stmt->execute();
+    $appt = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$appt) {
+        echo json_encode(['success' => false, 'message' => 'Appointment not found']);
+        exit;
+    }
+    if ($appt['status'] !== 'scheduled') {
+        echo json_encode(['success' => false, 'message' => 'Only scheduled appointments can be marked as no-show']);
+        exit;
+    }
+    $appt_datetime = strtotime($appt['appointment_date'] . ' ' . $appt['appointment_time']);
+    $now = time();
+    if ($now < $appt_datetime + 5 * 60) {
+        echo json_encode(['success' => false, 'message' => 'You can only mark as no-show 5 minutes after the scheduled time.']);
+        exit;
+    }
+}
+
 try {
     // Begin transaction
     $conn->beginTransaction();
@@ -65,4 +88,11 @@ try {
     error_log("Error updating appointment status: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'An error occurred while updating the appointment status']);
 }
+
+// Ensure JSON output and no accidental HTML
+ob_start();
+header('Content-Type: application/json');
+
+if (ob_get_length()) ob_end_clean();
+echo json_encode(['success' => false, 'message' => 'Unknown error occurred.']);
 ?> 

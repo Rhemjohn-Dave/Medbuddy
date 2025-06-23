@@ -151,6 +151,28 @@ $doctors = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             data-appointment='<?php echo json_encode($appointment); ?>'>
                                         <i class="material-icons">visibility</i>
                                     </button>
+                                    <?php if ($appointment['status'] === 'scheduled' || $appointment['status'] === 'no-show'): ?>
+                                        <?php
+                                            if ($appointment['status'] === 'scheduled') {
+                                                $apptDateTime = strtotime($appointment['date'] . ' ' . $appointment['time']);
+                                                $now = time();
+                                                $canNoShow = $now >= $apptDateTime + 5 * 60;
+                                            }
+                                        ?>
+                                        <?php if ($appointment['status'] === 'scheduled'): ?>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="markNoShow(<?php echo $appointment['id']; ?>)"
+                                                <?php if (!$canNoShow) echo 'disabled'; ?>
+                                                title="Mark as No-Show (enabled 5 min after scheduled time)">
+                                                <i class="material-icons">block</i>
+                                            </button>
+                                        <?php endif; ?>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="cancelAppointment(<?php echo $appointment['id']; ?>)"
+                                            title="Cancel Appointment">
+                                            <i class="material-icons">cancel</i>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -323,6 +345,58 @@ function viewAppointment(btn) {
         var modal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
         modal.show();
     }
+}
+
+// Function to mark appointment as No-Show
+function markNoShow(appointmentId) {
+    if (!confirm('Are you sure you want to mark this patient as No-Show?')) return;
+    fetch('../../api/update_appointment_status.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            appointment_id: appointmentId,
+            status: 'no-show',
+            notes: 'Patient did not arrive within 5 minutes.'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Appointment marked as No-Show.');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error);
+    });
+}
+
+// Function to cancel appointment
+function cancelAppointment(appointmentId) {
+    if (!confirm('Are you sure you want to cancel this appointment?')) return;
+    fetch('../../api/update_appointment_status.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            appointment_id: appointmentId,
+            status: 'cancelled',
+            notes: 'Cancelled by staff.'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Appointment cancelled.');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error);
+    });
 }
 
 // Load patients when modal is opened

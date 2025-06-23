@@ -464,10 +464,12 @@ try {
                                 <td><?php echo htmlspecialchars($appointment['clinic_name']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['purpose']); ?></td>
                                 <td>
-                                    <span class="badge bg-<?php echo ($appointment['status'] == 'scheduled') ? 'primary' : 
-                                        (($appointment['status'] == 'completed') ? 'success' : 
-                                        (($appointment['status'] == 'cancelled') ? 'danger' : 'secondary')); ?>">
-                                        <?php echo ucfirst($appointment['status']); ?>
+                                    <span class="badge bg-<?php echo (
+                                        $appointment['status'] == 'scheduled' ? 'primary' : 
+                                        ($appointment['status'] == 'completed' ? 'success' : 
+                                        ($appointment['status'] == 'cancelled' ? 'danger' : ($appointment['status'] == 'no-show' ? 'warning' : 'secondary')))
+                                    ); ?>">
+                                        <?php echo $appointment['status'] == 'no-show' ? 'No-Show' : ucfirst($appointment['status']); ?>
                                     </span>
                                     <?php if ($appointment['status'] == 'scheduled' && $appointment['vitals_recorded'] == 1): ?>
                                     <span class="badge bg-success ms-1" title="Vital signs recorded">Ready</span>

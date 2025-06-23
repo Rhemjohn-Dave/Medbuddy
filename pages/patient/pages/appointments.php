@@ -77,7 +77,7 @@ error_log("All booked slots: " . print_r($booked_slots, true));
 
 // Function to get available time slots for a doctor at a clinic on a specific date
 function getAvailableTimeSlots($doctor_id, $clinic_id, $date, $schedules, $appointment_map) {
-    $day_of_week = date('N', strtotime($date)); // 1 (Monday) to 7 (Sunday)
+    $day_of_week = date('w', strtotime($date)) + 1; // 1 (Sunday) to 7 (Saturday)
     $available_slots = [];
     
     // Debug information
@@ -611,11 +611,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Handle schedule background click
                 return;
             }
-            
             // Show appointment details modal
             fetch(`../../api/get_appointment.php?id=${info.event.id}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('API response:', data); // Log the full response
                     if (data.success) {
                         const appointment = data.appointment;
                         document.getElementById('modalDoctorName').textContent = 
@@ -640,31 +640,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('modalAddress').textContent = appointment.clinic_address;
                         document.getElementById('modalPurpose').textContent = appointment.purpose;
                         document.getElementById('modalNotes').textContent = appointment.notes || 'No additional notes';
-
-                        // Show/hide action buttons based on appointment status
-                        const cancelBtn = document.getElementById('cancelAppointmentBtn');
-                        const rescheduleBtn = document.getElementById('rescheduleAppointmentBtn');
-                        if (appointment.status === 'scheduled') {
-                            cancelBtn.style.display = 'inline-block';
-                            rescheduleBtn.style.display = 'inline-block';
-                            cancelBtn.onclick = () => {
-                                if (confirm('Are you sure you want to cancel this appointment?')) {
-                                    // Add cancellation logic here
-                                }
-                            };
-                        } else {
-                            cancelBtn.style.display = 'none';
-                            rescheduleBtn.style.display = 'none';
-                        }
-
                         // Show the modal
                         var modal = new bootstrap.Modal(document.getElementById('appointmentDetailsModal'));
                         modal.show();
+                    } else {
+                        console.error('API returned error:', data);
+                        alert('Error loading appointment details: ' + (data.message || 'Unknown error'));
                     }
                 })
                 .catch(error => {
                     console.error('Error loading appointment details:', error);
-                    alert('Error loading appointment details');
+                    alert('Error loading appointment details: ' + error);
                 });
         }
     });
@@ -1111,62 +1097,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <?php
-                if (isset($_GET['view_appointment'])) {
-                    $stmt = $conn->prepare("
-                        SELECT a.*, 
-                               d.first_name as doctor_first_name, d.last_name as doctor_last_name,
-                               c.name as clinic_name, c.address as clinic_address
-                        FROM appointments a
-                        JOIN doctors d ON a.doctor_id = d.id
-                        JOIN clinics c ON a.clinic_id = c.id
-                        WHERE a.id = ? AND a.patient_id = ?
-                    ");
-                    $stmt->execute([$_GET['view_appointment'], $patient_id]);
-                    $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
-                    
-                    if ($appointment): ?>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <p><strong>Doctor:</strong> Dr. <?php echo htmlspecialchars($appointment['doctor_last_name'] . ', ' . $appointment['doctor_first_name']); ?></p>
-                                <p><strong>Date:</strong> <?php echo date('F d, Y', strtotime($appointment['date'])); ?></p>
-                                <p><strong>Time:</strong> <?php echo date('h:i A', strtotime($appointment['time'])); ?></p>
-                                <p><strong>Status:</strong> 
-                                    <span class="badge bg-<?php 
-                                        echo match($appointment['status']) {
-                                            'scheduled' => 'primary',
-                                            'completed' => 'success',
-                                            'cancelled' => 'danger',
-                                            default => 'secondary'
-                                        };
-                                    ?>">
-                                        <?php echo ucfirst($appointment['status']); ?>
-                                    </span>
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Clinic:</strong> <?php echo htmlspecialchars($appointment['clinic_name']); ?></p>
-                                <p><strong>Address:</strong> <?php echo htmlspecialchars($appointment['clinic_address']); ?></p>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <h6>Purpose</h6>
-                            <p><?php echo nl2br(htmlspecialchars($appointment['purpose'])); ?></p>
-                        </div>
-                        <div class="mb-3">
-                            <h6>Notes</h6>
-                            <p><?php echo $appointment['notes'] ? nl2br(htmlspecialchars($appointment['notes'])) : 'No additional notes'; ?></p>
-                        </div>
-                    <?php else: ?>
-                        <div class="alert alert-danger">
-                            Appointment not found or you don't have permission to view it.
-                        </div>
-                    <?php endif;
-                } else { ?>
-                    <div class="alert alert-info">
-                        Please select an appointment to view its details.
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Doctor:</strong> <span id="modalDoctorName"></span></p>
+                        <p><strong>Date:</strong> <span id="modalDate"></span></p>
+                        <p><strong>Time:</strong> <span id="modalTime"></span></p>
+                        <p><strong>Status:</strong> <span id="modalStatus"></span></p>
                     </div>
-                <?php } ?>
+                    <div class="col-md-6">
+                        <p><strong>Clinic:</strong> <span id="modalClinic"></span></p>
+                        <p><strong>Address:</strong> <span id="modalAddress"></span></p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h6>Purpose</h6>
+                    <p id="modalPurpose"></p>
+                </div>
+                <div class="mb-3">
+                    <h6>Notes</h6>
+                    <p id="modalNotes"></p>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
