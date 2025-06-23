@@ -359,13 +359,19 @@ function markNoShow(appointmentId) {
             notes: 'Patient did not arrive within 5 minutes.'
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Appointment marked as No-Show.');
-            location.reload();
-        } else {
-            alert('Error: ' + data.message);
+    .then(response => response.text())
+    .then(text => {
+        try {
+            const data = JSON.parse(text);
+            if (data.success) {
+                alert('Appointment marked as No-Show.');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (e) {
+            console.error('Non-JSON response:', text);
+            alert('Server error: ' + text);
         }
     })
     .catch(error => {
@@ -385,13 +391,19 @@ function cancelAppointment(appointmentId) {
             notes: 'Cancelled by staff.'
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Appointment cancelled.');
-            location.reload();
-        } else {
-            alert('Error: ' + data.message);
+    .then(response => response.text())
+    .then(text => {
+        try {
+            const data = JSON.parse(text);
+            if (data.success) {
+                alert('Appointment cancelled.');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (e) {
+            console.error('Non-JSON response:', text);
+            alert('Server error: ' + text);
         }
     })
     .catch(error => {

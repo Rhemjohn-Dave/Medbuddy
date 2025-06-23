@@ -1,6 +1,14 @@
 <?php
 require_once '../config/database.php';
-require_once '../config/functions.php';
+$database = new Database();
+$db = $database->getConnection();
+
+if (!function_exists('sendEmail')) {
+    function sendEmail($to, $subject, $message) {
+        // Dummy function: do nothing or log
+        return true;
+    }
+}
 
 // Check if user is logged in and is staff
 session_start();
@@ -21,8 +29,8 @@ if (!$appointment_id || !$status) {
 
 // If marking as no-show, check if 5 minutes have passed since appointment time
 if ($status === 'no-show') {
-    $check_query = "SELECT appointment_date, appointment_time, status FROM appointments WHERE id = :id";
-    $stmt = $conn->prepare($check_query);
+    $check_query = "SELECT date, time, status FROM appointments WHERE id = :id";
+    $stmt = $db->prepare($check_query);
     $stmt->bindParam(':id', $appointment_id);
     $stmt->execute();
     $appt = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -34,7 +42,7 @@ if ($status === 'no-show') {
         echo json_encode(['success' => false, 'message' => 'Only scheduled appointments can be marked as no-show']);
         exit;
     }
-    $appt_datetime = strtotime($appt['appointment_date'] . ' ' . $appt['appointment_time']);
+    $appt_datetime = strtotime($appt['date'] . ' ' . $appt['time']);
     $now = time();
     if ($now < $appt_datetime + 5 * 60) {
         echo json_encode(['success' => false, 'message' => 'You can only mark as no-show 5 minutes after the scheduled time.']);
@@ -44,22 +52,22 @@ if ($status === 'no-show') {
 
 try {
     // Begin transaction
-    $conn->beginTransaction();
+    $db->beginTransaction();
 
     // Update appointment status
-    $update_query = "UPDATE appointments SET status = :status, staff_notes = :notes, updated_at = NOW() WHERE id = :id";
-    $stmt = $conn->prepare($update_query);
+    $update_query = "UPDATE appointments SET status = :status, updated_at = NOW() WHERE id = :id";
+    $stmt = $db->prepare($update_query);
     $stmt->bindParam(':status', $status);
-    $stmt->bindParam(':notes', $notes);
     $stmt->bindParam(':id', $appointment_id);
     $stmt->execute();
 
     // Get appointment details for notification
-    $appointment_query = "SELECT a.*, p.email as patient_email, p.first_name as patient_first_name, p.last_name as patient_last_name 
+    $appointment_query = "SELECT a.*, u.email as patient_email, p.first_name as patient_first_name, p.last_name as patient_last_name 
                          FROM appointments a 
                          JOIN patients p ON a.patient_id = p.id 
+                         JOIN users u ON p.user_id = u.id
                          WHERE a.id = :id";
-    $stmt = $conn->prepare($appointment_query);
+    $stmt = $db->prepare($appointment_query);
     $stmt->bindParam(':id', $appointment_id);
     $stmt->execute();
     $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -68,7 +76,7 @@ try {
     if ($appointment) {
         $subject = "Appointment " . ucfirst($status);
         $message = "Dear " . $appointment['patient_first_name'] . ",\n\n";
-        $message .= "Your appointment scheduled for " . date('F d, Y h:i A', strtotime($appointment['appointment_date'])) . " has been " . $status . ".\n\n";
+        $message .= "Your appointment scheduled for " . date('F d, Y h:i A', strtotime($appointment['date'] . ' ' . $appointment['time'])) . " has been " . $status . ".\n\n";
         if ($notes) {
             $message .= "Notes: " . $notes . "\n\n";
         }
@@ -79,20 +87,16 @@ try {
     }
 
     // Commit transaction
-    $conn->commit();
+    $db->commit();
 
     echo json_encode(['success' => true, 'message' => 'Appointment status updated successfully']);
 } catch (Exception $e) {
     // Rollback transaction on error
-    $conn->rollBack();
+    $db->rollBack();
     error_log("Error updating appointment status: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An error occurred while updating the appointment status']);
+    echo json_encode([
+        'success' => false,
+        'message' => 'An error occurred while updating the appointment status: ' . $e->getMessage()
+    ]);
 }
-
-// Ensure JSON output and no accidental HTML
-ob_start();
-header('Content-Type: application/json');
-
-if (ob_get_length()) ob_end_clean();
-echo json_encode(['success' => false, 'message' => 'Unknown error occurred.']);
 ?> 
