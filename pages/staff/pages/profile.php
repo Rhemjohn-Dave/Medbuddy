@@ -224,6 +224,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
+<!-- Show/Hide Password Toggle -->
+<script src="../../../assets/js/common.js"></script>
+
 <script>
 // Form validation
 (function () {

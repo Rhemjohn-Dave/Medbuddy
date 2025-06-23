@@ -879,8 +879,8 @@ if (isset($_GET['edit_user_id'])) {
     </div>
 </div>
 
-<!-- Add this in the head section or before closing body tag -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Show/Hide Password Toggle -->
+<script src="../../../assets/js/common.js"></script>
 
 <script>
 // Initialize Bootstrap tooltips and popovers

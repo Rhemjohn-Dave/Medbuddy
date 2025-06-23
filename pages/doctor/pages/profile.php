@@ -276,4 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<!-- Show/Hide Password Toggle -->
+<script src="../../../assets/js/common.js"></script> 

@@ -4,6 +4,10 @@ function setupPasswordVisibility() {
     const passwordInputs = document.querySelectorAll('input[type="password"]');
     
     passwordInputs.forEach(input => {
+        // Avoid double-wrapping if already inside an input-group or has a toggle
+        if (input.closest('.input-group') || input.dataset.hasToggle) return;
+        if (input.parentNode.classList.contains('position-relative')) return;
+
         // Create a wrapper div for the input and toggle button
         const wrapper = document.createElement('div');
         wrapper.className = 'position-relative';
@@ -15,16 +19,18 @@ function setupPasswordVisibility() {
         toggleButton.type = 'button';
         toggleButton.className = 'btn btn-link position-absolute end-0 top-50 translate-middle-y';
         toggleButton.style.textDecoration = 'none';
+        toggleButton.tabIndex = -1;
+        toggleButton.setAttribute('aria-label', 'Show/Hide Password');
         toggleButton.innerHTML = '<i class="bi bi-eye"></i>';
         
         // Add button to wrapper
         wrapper.appendChild(toggleButton);
+        input.dataset.hasToggle = '1';
         
         // Add click event listener
         toggleButton.addEventListener('click', () => {
             const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
             input.setAttribute('type', type);
-            
             // Toggle eye icon
             toggleButton.innerHTML = type === 'password' ? 
                 '<i class="bi bi-eye"></i>' : 
@@ -33,8 +39,16 @@ function setupPasswordVisibility() {
     });
 }
 
-// Initialize password visibility toggle when DOM is loaded
-document.addEventListener('DOMContentLoaded', setupPasswordVisibility);
+// Initialize password visibility toggle when DOM is loaded and on modal show
+function initializePasswordToggles() {
+    setupPasswordVisibility();
+    // For Bootstrap modals: re-run when a modal is shown
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('shown.bs.modal', setupPasswordVisibility);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initializePasswordToggles);
 
 // Common JavaScript functionality for MedBuddy
 
