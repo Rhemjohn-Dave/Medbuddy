@@ -91,7 +91,6 @@ try {
 
     // Set session variables
     $_SESSION['user_id'] = $row['id'];
-    $_SESSION['username'] = $row['username'];
     $_SESSION['role'] = $row['role'];
     $_SESSION['email'] = $row['email'];
 
@@ -118,7 +117,6 @@ try {
     sendJsonResponse(200, "Login successful", [
         "user" => [
             "id" => $row['id'],
-            "username" => $row['username'],
             "email" => $row['email'],
             "role" => $row['role']
         ],

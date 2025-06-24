@@ -282,6 +282,9 @@ if(isset($_SESSION['user_id'])) {
     <div class="login-container">
         <div class="login-wrapper">
             <div class="login-info">
+                <div class="text-center mb-4">
+                    <img src="../assets/images/medbuddy.png" alt="MedBuddy Logo" style="max-width: 150px; height: auto;">
+                </div>
                 <h1>Welcome to MedBuddy</h1>
                 <p>Your comprehensive healthcare management solution. Streamline your medical practice with our integrated platform.</p>
                 <ul class="features-list">

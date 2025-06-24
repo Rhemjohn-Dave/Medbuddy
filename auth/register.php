@@ -319,6 +319,9 @@ try {
     <div class="register-container">
         <div class="register-wrapper">
             <div class="register-info">
+                <div class="text-center mb-4">
+                    <img src="../assets/images/medbuddy.png" alt="MedBuddy Logo" style="max-width: 150px; height: auto;">
+                </div>
                 <h1>Join MedBuddy</h1>
                 <p>Create your account and experience the future of healthcare management. Our platform connects patients, doctors, and medical staff in one seamless ecosystem.</p>
                 <ul class="features-list">
@@ -331,6 +334,7 @@ try {
             
             <div class="register-card">
                 <div class="card-header">
+                    
                     <h2>Create Account</h2>
                 </div>
                 <div class="card-body">
@@ -353,14 +357,8 @@ try {
 
                         <div class="mb-3">
                             <label for="email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address" required>
                             <i class="bi bi-envelope input-icon"></i>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" placeholder="Choose a username" required>
-                            <i class="bi bi-person-badge input-icon"></i>
                         </div>
 
                         <div class="mb-3">
@@ -598,7 +596,6 @@ try {
                 firstName: document.getElementById('firstName').value,
                 lastName: document.getElementById('lastName').value,
                 email: document.getElementById('email').value,
-                username: document.getElementById('username').value,
                 password: document.getElementById('password').value,
                 confirmPassword: document.getElementById('confirmPassword').value,
                 role: document.getElementById('role').value

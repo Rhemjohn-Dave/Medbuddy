@@ -29,7 +29,6 @@ try {
     // Create users table
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(50) NOT NULL UNIQUE,
         email VARCHAR(100) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
         role ENUM('admin', 'doctor', 'patient', 'staff') NOT NULL,
@@ -43,9 +42,8 @@ try {
     
     if ($stmt->rowCount() == 0) {
         // Create admin user
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, approval_status) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO users (email, password, role, approval_status) VALUES (?, ?, ?, ?)");
         $stmt->execute([
-            "admin",
             "admin@medbuddy.com",
             password_hash("admin123", PASSWORD_DEFAULT),
             "admin",
@@ -59,9 +57,8 @@ try {
     
     if ($stmt->rowCount() == 0) {
         // Create test user
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, approval_status) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO users (email, password, role, approval_status) VALUES (?, ?, ?, ?)");
         $stmt->execute([
-            "testuser",
             "test@example.com",
             password_hash("test123", PASSWORD_DEFAULT),
             "patient",

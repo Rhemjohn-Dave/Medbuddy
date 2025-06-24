@@ -58,33 +58,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db->beginTransaction();
 
-        // Update user information
-        $user_sql = "UPDATE users SET 
-                    email = ?,
-                    username = ?
-                    WHERE id = ?";
-        $user_stmt = $db->prepare($user_sql);
-        $user_stmt->execute([
-            $_POST['email'],
-            $_POST['username'],
-            $_SESSION['user_id']
-        ]);
-
-        // Update patient information
-        $patient_sql = "UPDATE patients SET 
-                       first_name = ?,
-                       middle_name = ?,
-                       last_name = ?,
-                       date_of_birth = ?,
-                       gender = ?,
-                       contact_number = ?,
-                       address = ?,
-                       emergency_contact_name = ?,
-                       emergency_contact_number = ?,
-                       medical_history = ?
-                       WHERE user_id = ?";
-        $patient_stmt = $db->prepare($patient_sql);
-        $patient_stmt->execute([
+        // Update basic information
+        $update_sql = "UPDATE patients SET 
+            first_name = ?, 
+            middle_name = ?, 
+            last_name = ?, 
+            date_of_birth = ?, 
+            gender = ?, 
+            contact_number = ?, 
+            address = ?, 
+            emergency_contact_name = ?, 
+            emergency_contact_number = ?, 
+            medical_history = ? 
+            WHERE id = ?";
+        $update_stmt = $db->prepare($update_sql);
+        $update_stmt->execute([
             $_POST['first_name'],
             $_POST['middle_name'],
             $_POST['last_name'],
@@ -95,6 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST['emergency_contact_name'],
             $_POST['emergency_contact_number'],
             $_POST['medical_history'],
+            $_SESSION['user_id']
+        ]);
+
+        // Update email
+        $email_sql = "UPDATE users SET email = ? WHERE id = ?";
+        $email_stmt = $db->prepare($email_sql);
+        $email_stmt->execute([
+            $_POST['email'],
             $_SESSION['user_id']
         ]);
 
@@ -169,12 +165,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="col-12">
                                 <h6 class="mb-3">Account Information</h6>
                         </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" name="username" class="form-control" value="<?php echo htmlspecialchars($patient['username']); ?>" required>
-                    </div>
-                </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Email</label>

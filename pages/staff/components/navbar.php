@@ -15,7 +15,7 @@ if (!defined('STAFF_ACCESS')) {
             <div class="dropdown">
                 <button class="btn btn-link text-dark text-decoration-none dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="material-icons">account_circle</i>
-                    <span class="ms-1"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                    <span class="ms-1">User</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li>

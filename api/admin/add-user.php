@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Validate required fields
-$required_fields = ['username', 'email', 'password', 'role', 'first_name', 'last_name'];
+$required_fields = ['email', 'password', 'role', 'first_name', 'last_name'];
 foreach ($required_fields as $field) {
     if (!isset($data[$field]) || empty($data[$field])) {
         http_response_code(400);
@@ -29,11 +29,11 @@ try {
     // Start transaction
     $conn->beginTransaction();
     
-    // Check if username or email already exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-    $stmt->execute([$data['username'], $data['email']]);
+    // Check if email already exists
+    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->execute([$data['email']]);
     if ($stmt->rowCount() > 0) {
-        throw new Exception('Username or email already exists');
+        throw new Exception('Email already exists');
     }
     
     // Hash password
@@ -41,11 +41,10 @@ try {
     
     // Insert into users table
     $stmt = $conn->prepare("
-        INSERT INTO users (username, email, password, role, status, created_at, updated_at)
-        VALUES (?, ?, ?, ?, 'pending', NOW(), NOW())
+        INSERT INTO users (email, password, role, status, created_at, updated_at)
+        VALUES (?, ?, ?, 'pending', NOW(), NOW())
     ");
     $stmt->execute([
-        $data['username'],
         $data['email'],
         $hashed_password,
         $data['role']

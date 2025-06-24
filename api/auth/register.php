@@ -17,19 +17,18 @@ if(
     !empty($data->firstName) &&
     !empty($data->lastName) &&
     !empty($data->email) &&
-    !empty($data->username) &&
     !empty($data->password) &&
     !empty($data->role)
 ) {
     try {
-        // Check if username or email already exists
-        $check_query = "SELECT id FROM users WHERE username = ? OR email = ?";
+        // Check if email already exists
+        $check_query = "SELECT id FROM users WHERE email = ?";
         $check_stmt = $db->prepare($check_query);
-        $check_stmt->execute([$data->username, $data->email]);
+        $check_stmt->execute([$data->email]);
         
         if($check_stmt->rowCount() > 0) {
             http_response_code(400);
-            echo json_encode(array("message" => "Username or email already exists."));
+            echo json_encode(array("message" => "Email already exists."));
             exit();
         }
 
@@ -37,10 +36,10 @@ if(
         $db->beginTransaction();
 
         // Insert user
-        $user_query = "INSERT INTO users (username, password, email, role, approval_status) VALUES (?, ?, ?, ?, 'pending')";
+        $user_query = "INSERT INTO users (password, email, role, approval_status) VALUES (?, ?, ?, 'pending')";
         $user_stmt = $db->prepare($user_query);
         $hashed_password = password_hash($data->password, PASSWORD_DEFAULT);
-        $user_stmt->execute([$data->username, $hashed_password, $data->email, $data->role]);
+        $user_stmt->execute([$hashed_password, $data->email, $data->role]);
         
         $user_id = $db->lastInsertId();
 

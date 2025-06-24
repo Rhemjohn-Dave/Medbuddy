@@ -6,7 +6,6 @@ class User {
 
     // Object properties
     public $id;
-    public $username;
     public $email;
     public $password;
     public $role;
@@ -21,7 +20,7 @@ class User {
     // Login user
     public function login() {
         // Query to check if email exists
-        $query = "SELECT id, username, password, role, email, approval_status 
+        $query = "SELECT id, password, role, email, approval_status 
                 FROM " . $this->table_name . " 
                 WHERE email = ? 
                 LIMIT 0,1";
@@ -46,7 +45,6 @@ class User {
         // Query to insert record
         $query = "INSERT INTO " . $this->table_name . "
                 SET
-                    username = :username,
                     email = :email,
                     password = :password,
                     role = :role,
@@ -56,7 +54,6 @@ class User {
         $stmt = $this->conn->prepare($query);
 
         // Sanitize input
-        $this->username = htmlspecialchars(strip_tags($this->username));
         $this->email = htmlspecialchars(strip_tags($this->email));
         $this->role = htmlspecialchars(strip_tags($this->role));
         $this->approval_status = htmlspecialchars(strip_tags($this->approval_status));
@@ -65,7 +62,6 @@ class User {
         $this->password = password_hash($this->password, PASSWORD_DEFAULT);
 
         // Bind values
-        $stmt->bindParam(":username", $this->username);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":password", $this->password);
         $stmt->bindParam(":role", $this->role);
@@ -82,7 +78,7 @@ class User {
     // Check if email exists
     public function emailExists() {
         // Query to check if email exists
-        $query = "SELECT id, username, password, role, email, approval_status
+        $query = "SELECT id, password, role, email, approval_status
                 FROM " . $this->table_name . "
                 WHERE email = ?
                 LIMIT 0,1";
@@ -106,44 +102,6 @@ class User {
         if($num > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $this->id = $row['id'];
-            $this->username = $row['username'];
-            $this->password = $row['password'];
-            $this->role = $row['role'];
-            $this->approval_status = $row['approval_status'];
-            return true;
-        }
-
-        return false;
-    }
-
-    // Check if username exists
-    public function usernameExists() {
-        // Query to check if username exists
-        $query = "SELECT id, username, password, role, email, approval_status
-                FROM " . $this->table_name . "
-                WHERE username = ?
-                LIMIT 0,1";
-
-        // Prepare the query
-        $stmt = $this->conn->prepare($query);
-
-        // Sanitize input
-        $this->username = htmlspecialchars(strip_tags($this->username));
-
-        // Bind the username parameter
-        $stmt->bindParam(1, $this->username);
-
-        // Execute the query
-        $stmt->execute();
-
-        // Get number of rows
-        $num = $stmt->rowCount();
-
-        // If username exists, assign values to object properties
-        if($num > 0) {
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            $this->id = $row['id'];
-            $this->email = $row['email'];
             $this->password = $row['password'];
             $this->role = $row['role'];
             $this->approval_status = $row['approval_status'];

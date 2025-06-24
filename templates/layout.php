@@ -44,9 +44,9 @@ if (isset($_SESSION['role']) && isset($_SESSION['user_id'])) {
     }
 }
 
-// If no name was found, fallback to username
+// If no name was found, use a generic label
 if (empty($user_full_name)) {
-    $user_full_name = $_SESSION['username'];
+    $user_full_name = 'User';
 }
 ?>
 <!DOCTYPE html>

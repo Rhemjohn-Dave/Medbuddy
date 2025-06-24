@@ -27,14 +27,12 @@ try {
     
     // Update users table
     $user_sql = "UPDATE users SET 
-                 username = ?, 
                  email = ?, 
                  approval_status = ? 
                  WHERE id = ?";
                  
     $user_stmt = $conn->prepare($user_sql);
     $user_stmt->execute([
-        $data['username'],
         $data['email'],
         $data['approval_status'],
         $data['user_id']

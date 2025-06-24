@@ -62,14 +62,11 @@ if ($role !== 'all') {
 }
 
 if ($search) {
-    $sql .= " AND (u.username LIKE ? OR u.email LIKE ? OR 
-             CONCAT(COALESCE(d.first_name, p.first_name, s.first_name), ' ', 
-                   COALESCE(d.middle_name, p.middle_name, s.middle_name), ' ',
-                   COALESCE(d.last_name, p.last_name, s.last_name)) LIKE ?)";
-    $searchParam = "%$search%";
-    $params[] = $searchParam;
-    $params[] = $searchParam;
-    $params[] = $searchParam;
+    $sql .= " AND (u.email LIKE ? OR 
+            CONCAT(u.first_name, ' ', u.last_name) LIKE ? OR 
+            u.role LIKE ?)";
+    $search_term = "%$search%";
+    $params = array_merge($params, [$search_term, $search_term, $search_term]);
 }
 
 $sql .= " ORDER BY u.created_at DESC";
@@ -292,7 +289,7 @@ if (isset($_GET['edit_user_id'])) {
                 <div class="col-md-6">
                     <label class="form-label">Search</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" name="search" placeholder="Search by name, email, or username" value="<?php echo htmlspecialchars($search); ?>">
+                        <input type="text" class="form-control" name="search" placeholder="Search by name, email, or role" value="<?php echo htmlspecialchars($search); ?>">
                         <button class="btn btn-outline-secondary" type="submit">
                             <i class="material-icons">search</i>
                         </button>
@@ -309,10 +306,7 @@ if (isset($_GET['edit_user_id'])) {
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>First Name</th>
-                            <th>Middle Name</th>
-                            <th>Last Name</th>
-                            <th>Username</th>
+                            <th>Name</th>
                             <th>Email</th>
                             <th>Role</th>
                             <th>Status</th>
@@ -324,9 +318,6 @@ if (isset($_GET['edit_user_id'])) {
                         <?php foreach ($users as $user): ?>
                             <tr data-user-id="<?php echo $user['id']; ?>">
                                 <td><?php echo htmlspecialchars($user['first_name'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($user['middle_name'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($user['last_name'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($user['username']); ?></td>
                                 <td><?php echo htmlspecialchars($user['email']); ?></td>
                                 <td>
                                     <span class="badge bg-<?php 
@@ -427,19 +418,11 @@ if (isset($_GET['edit_user_id'])) {
                             <h6 class="mb-0"><i class="material-icons align-middle me-1">contact_mail</i> Account Information</h6>
                         </div>
                         <div class="card-body">
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Email:</div>
+                                <div class="col-md-8" id="viewUserEmail"><?php echo htmlspecialchars($view_user['email']); ?></div>
+                            </div>
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted small">Username</label>
-                                        <p class="mb-0 fw-bold"><?php echo htmlspecialchars($view_user['username']); ?></p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted small">Email</label>
-                                        <p class="mb-0 fw-bold"><?php echo htmlspecialchars($view_user['email']); ?></p>
-                                    </div>
-                                </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label text-muted small">Role</label>
@@ -611,14 +594,9 @@ if (isset($_GET['edit_user_id'])) {
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Username <span class="text-danger">*</span></label>
-                                    <input type="text" name="username" value="<?php echo htmlspecialchars($edit_user['username']); ?>" required class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
                                     <label class="form-label">Email <span class="text-danger">*</span></label>
                                     <input type="email" name="email" value="<?php echo htmlspecialchars($edit_user['email']); ?>" required class="form-control">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -730,10 +708,6 @@ if (isset($_GET['edit_user_id'])) {
                     <div class="row g-3">
                         <!-- Basic Information -->
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Username <span class="text-danger">*</span></label>
-                                <input type="text" name="username" required class="form-control">
-                            </div>
                             <div class="mb-3">
                                 <label class="form-label">Email <span class="text-danger">*</span></label>
                                 <input type="email" name="email" required class="form-control">
@@ -1371,7 +1345,6 @@ function printUsers() {
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Username</th>
                         <th>Email</th>
                         <th>Role</th>
                         <th>Status</th>
@@ -1385,8 +1358,7 @@ function printUsers() {
                             <td>${row.cells[3].textContent}</td>
                             <td>${row.cells[4].textContent}</td>
                             <td>${row.cells[5].innerHTML}</td>
-                            <td>${row.cells[6].innerHTML}</td>
-                            <td>${row.cells[7].textContent}</td>
+                            <td>${row.cells[6].textContent}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -1409,14 +1381,13 @@ function downloadUsers() {
     const search = document.querySelector('input[name="search"]').value;
 
     // Create CSV content
-    const headers = ['Name', 'Username', 'Email', 'Role', 'Status', 'Registered'];
+    const headers = ['Name', 'Email', 'Role', 'Status', 'Registered'];
     const rows = Array.from(document.querySelectorAll('tbody tr')).map(row => [
         `${row.cells[0].textContent} ${row.cells[1].textContent} ${row.cells[2].textContent}`.trim(),
         row.cells[3].textContent,
         row.cells[4].textContent,
         row.cells[5].textContent,
-        row.cells[6].textContent,
-        row.cells[7].textContent
+        row.cells[6].textContent
     ]);
 
     // Convert to CSV
