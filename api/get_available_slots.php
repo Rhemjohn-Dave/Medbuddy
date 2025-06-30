@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 // Check if required parameters are provided
 if (!isset($_GET['doctor_id']) || !isset($_GET['clinic_id']) || !isset($_GET['date'])) {
@@ -19,70 +19,50 @@ try {
     $clinic_id = $_GET['clinic_id'];
     $date = $_GET['date'];
     
-    // Get the day of week (1-7, where 1 is Monday)
-    $day_of_week = date('N', strtotime($date));
+    // Get all schedules for this doctor and clinic
+    $stmt = $conn->prepare("SELECT * FROM doctor_schedules WHERE doctor_id = ? AND clinic_id = ?");
+    $stmt->execute([$doctor_id, $clinic_id]);
+    $schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get doctor's schedule for this day
-    $schedule_sql = "SELECT * FROM doctor_schedules 
-                    WHERE doctor_id = ? 
-                    AND clinic_id = ? 
-                    AND day_of_week = ?";
-    $schedule_stmt = $conn->prepare($schedule_sql);
-    $schedule_stmt->execute([$doctor_id, $clinic_id, $day_of_week]);
-    $schedule = $schedule_stmt->fetch(PDO::FETCH_ASSOC);
+    // Get all booked slots for this doctor, clinic, and date
+    $stmt = $conn->prepare("SELECT time FROM appointments WHERE doctor_id = ? AND clinic_id = ? AND date = ? AND status != 'cancelled'");
+    $stmt->execute([$doctor_id, $clinic_id, $date]);
+    $booked_slots = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-    if (!$schedule) {
-        echo json_encode([
-            'success' => true,
-            'slots' => []
-        ]);
-        exit;
-    }
+    $day_of_week = date('w', strtotime($date)) + 1; // 1 (Sunday) to 7 (Saturday)
+    $available_slots = [];
 
-    // Get existing appointments for this date
-    $appointments_sql = "SELECT time FROM appointments 
-                        WHERE doctor_id = ? 
-                        AND clinic_id = ? 
-                        AND date = ? 
-                        AND status != 'cancelled'";
-    $appointments_stmt = $conn->prepare($appointments_sql);
-    $appointments_stmt->execute([$doctor_id, $clinic_id, $date]);
-    $existing_appointments = $appointments_stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    // Generate available time slots
-    $slots = [];
-    $start_time = strtotime($schedule['start_time']);
-    $end_time = strtotime($schedule['end_time']);
-    $break_start = $schedule['break_start'] ? strtotime($schedule['break_start']) : null;
-    $break_end = $schedule['break_end'] ? strtotime($schedule['break_end']) : null;
-
-    // Generate 30-minute slots
-    for ($time = $start_time; $time < $end_time; $time += 1800) {
-        // Skip break time
-        if ($break_start && $break_end && $time >= $break_start && $time < $break_end) {
-            continue;
-        }
-
-        $time_str = date('H:i:s', $time);
-        
-        // Check if slot is available
-        if (!in_array($time_str, $existing_appointments)) {
-            $slots[] = [
-                'time' => $time_str,
-                'formatted_time' => date('h:i A', $time)
-            ];
+    foreach ($schedules as $schedule) {
+        if ($schedule['day_of_week'] == $day_of_week) {
+            $start_time = strtotime($schedule['start_time']);
+            $end_time = strtotime($schedule['end_time']);
+            $break_start = $schedule['break_start'] ? strtotime($schedule['break_start']) : null;
+            $break_end = $schedule['break_end'] ? strtotime($schedule['break_end']) : null;
+            for ($time = $start_time; $time < $end_time; $time += 1800) { // 30-minute slots
+                if ($break_start && $break_end && $time >= $break_start && $time < $break_end) {
+                    continue;
+                }
+                $time_str = date('H:i:s', $time);
+                if (!in_array($time_str, $booked_slots)) {
+                    $available_slots[] = [
+                        'time' => $time_str,
+                        'formatted_time' => date('h:i A', $time)
+                    ];
+                }
+            }
+            break;
         }
     }
 
     echo json_encode([
         'success' => true,
-        'slots' => $slots
+        'available_slots' => $available_slots
     ]);
 
 } catch (Exception $e) {
     error_log("Error in get_available_slots.php: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Error retrieving available slots'
+        'message' => 'An error occurred while fetching available slots'
     ]);
 } 

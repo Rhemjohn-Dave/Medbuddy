@@ -8,6 +8,7 @@ if(isset($_SESSION['user_id'])) {
 // Load doctors list
 require_once '../config/database.php';
 $doctors = [];
+$specializations = [];
 
 try {
     // Create database connection
@@ -18,9 +19,14 @@ try {
     $stmt = $conn->prepare("SELECT id, first_name, middle_name, last_name, license_number FROM doctors WHERE status = 'active'");
     $stmt->execute();
     $doctors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get specializations
+    $spec_stmt = $conn->prepare("SELECT id, name FROM specializations ORDER BY name");
+    $spec_stmt->execute();
+    $specializations = $spec_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch(Exception $e) {
     // Handle error silently
-    error_log("Error loading doctors: " . $e->getMessage());
+    error_log("Error loading doctors or specializations: " . $e->getMessage());
 }
 ?>
 <!DOCTYPE html>
@@ -388,7 +394,12 @@ try {
                         <div id="doctorFields" class="role-fields">
                             <div class="mb-3">
                                 <label for="specialization" class="form-label">Specialization</label>
-                                <input type="text" class="form-control" id="specialization" name="specialization" placeholder="Enter your specialization">
+                                <select class="form-select" id="specialization" name="specialization">
+                                    <option value="">Select Specialization</option>
+                                    <?php foreach ($specializations as $spec): ?>
+                                        <option value="<?php echo htmlspecialchars($spec['id']); ?>"><?php echo htmlspecialchars($spec['name']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                                 <i class="bi bi-briefcase input-icon"></i>
                             </div>
                             <div class="mb-3">

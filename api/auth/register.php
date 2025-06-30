@@ -32,6 +32,28 @@ if(
             exit();
         }
 
+        // Check if contact number already exists (for all roles)
+        if (!empty($data->contactNumber)) {
+            $contact_exists = false;
+            // Check in doctors
+            $stmt = $db->prepare("SELECT id FROM doctors WHERE contact_number = ?");
+            $stmt->execute([$data->contactNumber]);
+            if ($stmt->rowCount() > 0) $contact_exists = true;
+            // Check in patients
+            $stmt = $db->prepare("SELECT id FROM patients WHERE contact_number = ?");
+            $stmt->execute([$data->contactNumber]);
+            if ($stmt->rowCount() > 0) $contact_exists = true;
+            // Check in staff
+            $stmt = $db->prepare("SELECT id FROM staff WHERE contact_number = ?");
+            $stmt->execute([$data->contactNumber]);
+            if ($stmt->rowCount() > 0) $contact_exists = true;
+            if ($contact_exists) {
+                http_response_code(400);
+                echo json_encode(array("message" => "Contact number already exists."));
+                exit();
+            }
+        }
+
         // Start transaction
         $db->beginTransaction();
 
@@ -45,14 +67,14 @@ if(
 
         // If role is doctor, insert doctor details
         if($data->role === 'doctor' && !empty($data->specialization) && !empty($data->licenseNumber)) {
-            $doctor_query = "INSERT INTO doctors (user_id, first_name, last_name, specialization, license_number, contact_number, address) 
+            $doctor_query = "INSERT INTO doctors (user_id, specialization_id, first_name, last_name, license_number, contact_number, address) 
                            VALUES (?, ?, ?, ?, ?, ?, ?)";
             $doctor_stmt = $db->prepare($doctor_query);
             $doctor_stmt->execute([
                 $user_id, 
+                $data->specialization, 
                 $data->firstName, 
                 $data->lastName, 
-                $data->specialization, 
                 $data->licenseNumber,
                 $data->contactNumber,
                 $data->address

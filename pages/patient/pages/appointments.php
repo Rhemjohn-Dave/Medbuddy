@@ -543,16 +543,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 schedule.day_of_week == dayOfWeek
             );
 
+            // Only show SweetAlert if there are truly no schedules for this day
             if (availableSchedules.length === 0) {
                 Swal.fire({
                     icon: 'info',
-                    title: 'No Available Slots',
-                    text: 'No doctors are available on this date.'
+                    title: 'No Available Schedules',
+                    text: 'No doctors are scheduled to work on this date.'
                 });
                 return;
             }
 
-            // Show scheduling modal with available options
+            // Always open the modal if there are schedules
             const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleAppointmentModal'));
             
             // Reset form
@@ -627,11 +628,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 month: 'long', 
                                 day: 'numeric' 
                             });
-                        document.getElementById('modalTime').textContent = 
-                            new Date(`2000-01-01T${appointment.time}`).toLocaleTimeString('en-US', {
-                                hour: 'numeric',
-                                minute: '2-digit'
-                            });
+                        // Display the formatted time directly from the API response
+                        document.getElementById('modalTime').textContent = appointment.time || 'N/A';
                         document.getElementById('modalStatus').innerHTML = 
                             `<span class="badge bg-${appointment.status === 'scheduled' ? 'primary' : 
                                 (appointment.status === 'completed' ? 'success' : 'danger')}">${
@@ -677,6 +675,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('input[name="date"]').addEventListener('change', updateTimeSlots);
 
     function updateTimeSlots() {
+        const form = document.getElementById('appointmentForm');
         const doctorId = document.querySelector('select[name="doctor_id"]').value;
         const clinicId = document.querySelector('select[name="clinic_id"]').value;
         const date = document.querySelector('input[name="date"]').value;
@@ -695,145 +694,44 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         timeSelect.innerHTML = '<option value="">Loading available slots...</option>';
 
-        // Fetch booked slots from the server
-        fetch(`../../api/get_booked_slots.php?doctor_id=${doctorId}&clinic_id=${clinicId}&date=${date}`)
+        // Fetch available slots from the server
+        fetch(`../../api/get_available_slots.php?doctor_id=${doctorId}&clinic_id=${clinicId}&date=${date}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const bookedSlots = data.booked_slots;
-                    console.log('Booked slots from server:', bookedSlots);
-
-                    // Store booked slots in a data attribute for later validation
-                    timeSelect.setAttribute('data-booked-slots', JSON.stringify(bookedSlots));
-
-                    // Define all possible time slots
-                    const timeSlots = [
-                        { value: '08:00:00', label: '8:00 AM' },
-                        { value: '08:30:00', label: '8:30 AM' },
-                        { value: '09:00:00', label: '9:00 AM' },
-                        { value: '09:30:00', label: '9:30 AM' },
-                        { value: '10:00:00', label: '10:00 AM' },
-                        { value: '10:30:00', label: '10:30 AM' },
-                        { value: '11:00:00', label: '11:00 AM' },
-                        { value: '11:30:00', label: '11:30 AM' },
-                        { value: '13:00:00', label: '1:00 PM' },
-                        { value: '13:30:00', label: '1:30 PM' },
-                        { value: '14:00:00', label: '2:00 PM' },
-                        { value: '14:30:00', label: '2:30 PM' },
-                        { value: '15:00:00', label: '3:00 PM' },
-                        { value: '15:30:00', label: '3:30 PM' },
-                        { value: '16:00:00', label: '4:00 PM' },
-                        { value: '16:30:00', label: '4:30 PM' }
-                    ];
+                    const availableSlots = data.available_slots;
+                    console.log('Available slots from server:', availableSlots);
 
                     // Clear the select element
                     timeSelect.innerHTML = '<option value="">Select time...</option>';
 
-                    // Add only available slots to the select
-                    timeSlots.forEach(slot => {
-                        const isBooked = bookedSlots.includes(slot.value);
-                        console.log(`Checking slot ${slot.value}: ${isBooked ? 'booked' : 'available'}`);
-                        
-                        if (!isBooked) {
-                            const option = document.createElement('option');
-                            option.value = slot.value;
-                            option.text = slot.label;
-                            timeSelect.appendChild(option);
-                        }
+                    // Add available slots to the select
+                    availableSlots.forEach(slot => {
+                        const option = document.createElement('option');
+                        option.value = slot.time;
+                        option.text = slot.formatted_time;
+                        timeSelect.appendChild(option);
                     });
+                    console.log('Options in dropdown after populate:', timeSelect.options.length);
 
-                    // If no slots are available, show a message
-                    if (timeSelect.options.length === 1) {
+                    // Enable the select after populating
+                    timeSelect.disabled = false;
+
+                    // If no slots are available, show a message and disable the submit button
+                    if (availableSlots.length === 0) {
                         const option = document.createElement('option');
                         option.value = '';
                         option.text = 'No available time slots';
                         option.disabled = true;
                         timeSelect.appendChild(option);
+                        // Disable submit button
+                        form.querySelector('button[type="submit"]').disabled = true;
+                    } else {
+                        // Enable submit button if slots are available
+                        form.querySelector('button[type="submit"]').disabled = false;
                     }
-
-                    // Enable the select
-                    timeSelect.disabled = false;
-
-                    // Add change event listener to prevent selection of booked slots
-                    timeSelect.addEventListener('change', function(e) {
-                        const selectedTime = this.value;
-                        const bookedSlots = JSON.parse(this.getAttribute('data-booked-slots') || '[]');
-                        
-                        if (bookedSlots.includes(selectedTime)) {
-                            e.preventDefault();
-                            this.value = '';
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Invalid Selection',
-                                text: 'This time slot is no longer available. Please select another time.'
-                            }).then(() => {
-                                // Refresh the time slots after showing the error
-                                updateTimeSlots();
-                            });
-                        }
-                    });
-
-                    // Add form submission validation
-                    const form = document.getElementById('appointmentForm');
-                    form.onsubmit = function(e) {
-                        e.preventDefault();
-                        
-                        const selectedTime = timeSelect.value;
-                        const bookedSlots = JSON.parse(timeSelect.getAttribute('data-booked-slots') || '[]');
-                        
-                        if (!selectedTime) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Invalid Selection',
-                                text: 'Please select a valid time slot.'
-                            });
-                            return;
-                        }
-
-                        if (bookedSlots.includes(selectedTime)) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Invalid Selection',
-                                text: 'This time slot is no longer available. Please select another time.'
-                            }).then(() => {
-                                // Refresh the time slots after showing the error
-                                updateTimeSlots();
-                            });
-                            return;
-                        }
-
-                        // Double-check with server before submitting
-                        fetch(`../../api/check_slot_availability.php?doctor_id=${doctorId}&clinic_id=${clinicId}&date=${date}&time=${selectedTime}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.available) {
-                                    // Submit the form directly
-                                    form.submit();
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Slot Unavailable',
-                                        text: 'This time slot is no longer available. Please select another time.'
-                                    }).then(() => {
-                                        // Refresh the time slots after showing the error
-                                        updateTimeSlots();
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: 'Failed to verify slot availability. Please try again.'
-                                }).then(() => {
-                                    // Refresh the time slots after showing the error
-                                    updateTimeSlots();
-                                });
-                            });
-                    };
                 } else {
-                    console.error('Error fetching booked slots:', data.message);
+                    console.error('Error fetching available slots:', data.message);
                     timeSelect.innerHTML = '<option value="">Error loading slots</option>';
                     Swal.fire({
                         icon: 'error',
