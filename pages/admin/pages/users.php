@@ -360,7 +360,7 @@ if (isset($_GET['edit_user_id'])) {
                                                 <i class="material-icons">check</i>
                                             </button>
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="openRejectModal(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['username']); ?>')">
+                                                    onclick="openRejectModal(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['email']); ?>')">
                                                 <i class="material-icons">close</i>
                                             </button>
                                         <?php endif; ?>
@@ -854,7 +854,7 @@ if (isset($_GET['edit_user_id'])) {
 </div>
 
 <!-- Show/Hide Password Toggle -->
-<script src="../../../assets/js/common.js"></script>
+<script src="/Medbuddy/assets/js/common.js"></script>
 
 <script>
 // Initialize Bootstrap tooltips and popovers
@@ -1029,9 +1029,9 @@ function showApproveUserModal(userId) {
     new bootstrap.Modal(document.getElementById('approveUserModal')).show();
 }
 
-function openRejectModal(userId, username) {
+function openRejectModal(userId, email) {
     document.getElementById('rejectUserId').value = userId;
-    document.getElementById('rejectUsername').textContent = username;
+    document.getElementById('rejectUsername').textContent = email;
     const modal = new bootstrap.Modal(document.getElementById('rejectUserModal'));
     modal.show();
 }

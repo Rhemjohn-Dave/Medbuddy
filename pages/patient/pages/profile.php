@@ -296,7 +296,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <!-- Show/Hide Password Toggle -->
-<script src="../../../assets/js/common.js"></script>
+<script src="/Medbuddy/assets/js/common.js"></script>
 
 <script>
 // Form validation

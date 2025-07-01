@@ -61,8 +61,8 @@ try {
         throw new Exception('Failed to update user status');
     }
 
-    // Get user email for notification
-    $sql = "SELECT email, username, role FROM users WHERE id = ?";
+    // Get user email and role for notification
+    $sql = "SELECT email, role FROM users WHERE id = ?";
     $stmt = $conn->prepare($sql);
     if (!$stmt->execute([$userId])) {
         throw new Exception('Failed to fetch user details');
@@ -70,10 +70,31 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
+        // Get full name from the appropriate table
+        $full_name = '';
+        if ($user['role'] === 'doctor') {
+            $name_stmt = $conn->prepare("SELECT first_name, last_name FROM doctors WHERE user_id = ?");
+            $name_stmt->execute([$userId]);
+            $name = $name_stmt->fetch(PDO::FETCH_ASSOC);
+            if ($name) $full_name = trim($name['first_name'] . ' ' . $name['last_name']);
+        } elseif ($user['role'] === 'patient') {
+            $name_stmt = $conn->prepare("SELECT first_name, last_name FROM patients WHERE user_id = ?");
+            $name_stmt->execute([$userId]);
+            $name = $name_stmt->fetch(PDO::FETCH_ASSOC);
+            if ($name) $full_name = trim($name['first_name'] . ' ' . $name['last_name']);
+        } elseif ($user['role'] === 'staff') {
+            $name_stmt = $conn->prepare("SELECT first_name, last_name FROM staff WHERE user_id = ?");
+            $name_stmt->execute([$userId]);
+            $name = $name_stmt->fetch(PDO::FETCH_ASSOC);
+            if ($name) $full_name = trim($name['first_name'] . ' ' . $name['last_name']);
+        }
+        if (empty($full_name)) {
+            $full_name = $user['email'];
+        }
         // Send approval email
         $to = $user['email'];
         $subject = "Your MedBuddy Account Has Been Approved";
-        $message = "Dear " . $user['username'] . ",\n\n";
+        $message = "Dear " . $full_name . ",\n\n";
         $message .= "Your MedBuddy account has been approved. You can now log in and access all features.\n\n";
         
         if (!empty($notes)) {

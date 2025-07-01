@@ -20,32 +20,30 @@ try {
     // This query gets the latest message for each conversation thread
     $latest_messages_sql = "
         SELECT m.*,
-        u_sender.username as sender_username,
         u_sender.role as sender_role,
         CASE 
             WHEN u_sender.role = 'doctor' THEN d.first_name 
-                   WHEN u_sender.role = 'patient' THEN p_sender.first_name 
+            WHEN u_sender.role = 'patient' THEN p_sender.first_name 
             WHEN u_sender.role = 'staff' THEN s.first_name
             ELSE NULL 
         END as sender_first_name,
         CASE 
             WHEN u_sender.role = 'doctor' THEN d.last_name 
-                   WHEN u_sender.role = 'patient' THEN p_sender.last_name 
+            WHEN u_sender.role = 'patient' THEN p_sender.last_name 
             WHEN u_sender.role = 'staff' THEN s.last_name
             ELSE NULL 
-               END as sender_last_name,
-        u_receiver.username as receiver_username,
+        END as sender_last_name,
         u_receiver.role as receiver_role,
         CASE 
-                   WHEN u_receiver.role = 'doctor' THEN d2.first_name 
-                   WHEN u_receiver.role = 'patient' THEN p_receiver.first_name 
-                   WHEN u_receiver.role = 'staff' THEN s2.first_name
+            WHEN u_receiver.role = 'doctor' THEN d2.first_name 
+            WHEN u_receiver.role = 'patient' THEN p_receiver.first_name 
+            WHEN u_receiver.role = 'staff' THEN s2.first_name
             ELSE NULL 
         END as receiver_first_name,
         CASE 
-                   WHEN u_receiver.role = 'doctor' THEN d2.last_name 
-                   WHEN u_receiver.role = 'patient' THEN p_receiver.last_name 
-                   WHEN u_receiver.role = 'staff' THEN s2.last_name
+            WHEN u_receiver.role = 'doctor' THEN d2.last_name 
+            WHEN u_receiver.role = 'patient' THEN p_receiver.last_name 
+            WHEN u_receiver.role = 'staff' THEN s2.last_name
             ELSE NULL 
         END as receiver_last_name
         FROM messages m
@@ -70,7 +68,7 @@ try {
     $latest_messages = $latest_messages_stmt->fetchAll(PDO::FETCH_ASSOC);
 
      // Get users for recipient selection in compose modal
-    $users_sql = "SELECT u.id, u.username, u.role,
+    $users_sql = "SELECT u.id, u.role, u.email,
         CASE 
             WHEN u.role = 'doctor' THEN d.first_name 
             WHEN u.role = 'patient' THEN p.first_name 
@@ -211,8 +209,13 @@ try {
                             <option value="">Select Recipient</option>
                             <?php foreach ($users as $user): ?>
                                 <option value="<?php echo $user['id']; ?>">
-                                    <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?> 
-                                    (<?php echo ucfirst($user['role']); ?>)
+                                    <?php
+                                    $name = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+                                    if (empty(trim($name))) {
+                                        $name = $user['email'];
+                                    }
+                                    echo htmlspecialchars($name . ' (' . ucfirst($user['role']) . ')');
+                                    ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

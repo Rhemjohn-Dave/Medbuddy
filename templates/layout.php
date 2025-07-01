@@ -169,7 +169,7 @@ if (empty($user_full_name)) {
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom JS -->
-    <script src="../../assets/js/common.js"></script>
+    <script src="/Medbuddy/assets/js/common.js"></script>
     <?php if (isset($extra_js)): ?>
         <?php foreach ($extra_js as $js): ?>
             <script src="<?php echo $js; ?>"></script>

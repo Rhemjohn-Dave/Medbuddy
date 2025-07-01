@@ -34,13 +34,41 @@ switch ($request_method) {
                     // Fetch all messages between the current user and the partner
                     // This query selects messages where sender is user_id and receiver is partner_id OR sender is partner_id and receiver is user_id
                     $sql = "SELECT m.*,
-                                   u_sender.username as sender_username,
                                    u_sender.role as sender_role,
-                                   u_receiver.username as receiver_username,
-                                   u_receiver.role as receiver_role
+                                   CASE 
+                                       WHEN u_sender.role = 'doctor' THEN d.first_name 
+                                       WHEN u_sender.role = 'patient' THEN p_sender.first_name 
+                                       WHEN u_sender.role = 'staff' THEN s.first_name
+                                       ELSE NULL 
+                                   END as sender_first_name,
+                                   CASE 
+                                       WHEN u_sender.role = 'doctor' THEN d.last_name 
+                                       WHEN u_sender.role = 'patient' THEN p_sender.last_name 
+                                       WHEN u_sender.role = 'staff' THEN s.last_name
+                                       ELSE NULL 
+                                   END as sender_last_name,
+                                   u_receiver.role as receiver_role,
+                                   CASE 
+                                       WHEN u_receiver.role = 'doctor' THEN d2.first_name 
+                                       WHEN u_receiver.role = 'patient' THEN p_receiver.first_name 
+                                       WHEN u_receiver.role = 'staff' THEN s2.first_name
+                                       ELSE NULL 
+                                   END as receiver_first_name,
+                                   CASE 
+                                       WHEN u_receiver.role = 'doctor' THEN d2.last_name 
+                                       WHEN u_receiver.role = 'patient' THEN p_receiver.last_name 
+                                       WHEN u_receiver.role = 'staff' THEN s2.last_name
+                                       ELSE NULL 
+                                   END as receiver_last_name
                             FROM messages m
                             JOIN users u_sender ON m.sender_id = u_sender.id
                             JOIN users u_receiver ON m.receiver_id = u_receiver.id
+                            LEFT JOIN doctors d ON u_sender.id = d.user_id 
+                            LEFT JOIN patients p_sender ON u_sender.id = p_sender.user_id 
+                            LEFT JOIN staff s ON u_sender.id = s.user_id 
+                            LEFT JOIN doctors d2 ON u_receiver.id = d2.user_id 
+                            LEFT JOIN patients p_receiver ON u_receiver.id = p_receiver.user_id 
+                            LEFT JOIN staff s2 ON u_receiver.id = s2.user_id 
                             WHERE (m.sender_id = ? AND m.receiver_id = ?)
                                OR (m.sender_id = ? AND m.receiver_id = ?)
                             ORDER BY m.created_at ASC"; // Order by time for chat history

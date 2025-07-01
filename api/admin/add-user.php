@@ -41,7 +41,7 @@ try {
     
     // Insert into users table
     $stmt = $conn->prepare("
-        INSERT INTO users (email, password, role, status, created_at, updated_at)
+        INSERT INTO users (email, password, role, approval_status, created_at, updated_at)
         VALUES (?, ?, ?, 'pending', NOW(), NOW())
     ");
     $stmt->execute([
