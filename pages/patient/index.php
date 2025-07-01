@@ -51,6 +51,11 @@ $sidebar_menu = [
         'label' => 'Medical Records'
     ],
     [
+        'page' => 'lab-requests',
+        'icon' => 'science',
+        'label' => 'Lab Results'
+    ],
+    [
         'page' => 'messages',
         'icon' => 'message',
         'label' => 'Messages'

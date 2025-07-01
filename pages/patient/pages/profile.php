@@ -10,7 +10,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Get patient information
-$patient_query = "SELECT p.*, u.email, u.username, u.approval_status
+$patient_query = "SELECT p.*, u.email, u.approval_status
           FROM patients p 
           JOIN users u ON p.user_id = u.id 
                  WHERE u.id = ?";

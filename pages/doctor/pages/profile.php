@@ -10,7 +10,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Get doctor information
-$doctor_query = "SELECT d.*, u.email, u.username, u.approval_status, s.name as specialization_name
+$doctor_query = "SELECT d.*, u.email, u.approval_status, s.name as specialization_name
                 FROM doctors d
                 JOIN users u ON d.user_id = u.id
                 LEFT JOIN specializations s ON d.specialization_id = s.id

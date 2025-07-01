@@ -600,6 +600,31 @@ CREATE TABLE `vital_signs` (
 INSERT INTO `vital_signs` (`id`, `medical_record_id`, `blood_pressure_systolic`, `blood_pressure_diastolic`, `heart_rate`, `respiratory_rate`, `temperature`, `oxygen_saturation`, `weight`, `height`, `bmi`, `pain_scale`, `recorded_by`, `recorded_at`, `notes`) VALUES
 (7, 16, 120, 80, 120, 120, 33.00, 80.00, 60.00, 160.00, 23.40, 5, 1, '2025-06-06 07:47:04', 'Goods');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `lab_requests`
+--
+
+CREATE TABLE `lab_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `patient_id` int(11) NOT NULL,
+  `doctor_id` int(11) NOT NULL,
+  `appointment_id` int(11) DEFAULT NULL,
+  `test_type` varchar(255) NOT NULL,
+  `notes` text DEFAULT NULL,
+  `status` enum('requested','in_progress','completed','cancelled') DEFAULT 'requested',
+  `result` text DEFAULT NULL,
+  `result_file` VARCHAR(255) DEFAULT NULL,
+  `request_slip` VARCHAR(255) DEFAULT NULL,
+  `requested_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `completed_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `patient_id` (`patient_id`),
+  KEY `doctor_id` (`doctor_id`),
+  KEY `appointment_id` (`appointment_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -952,28 +977,4 @@ ALTER TABLE `notifications`
 -- Constraints for table `patients`
 --
 ALTER TABLE `patients`
-  ADD CONSTRAINT `patients_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `prescriptions`
---
-ALTER TABLE `prescriptions`
-  ADD CONSTRAINT `prescriptions_ibfk_1` FOREIGN KEY (`medical_record_id`) REFERENCES `medical_records` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `staff`
---
-ALTER TABLE `staff`
-  ADD CONSTRAINT `staff_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `vital_signs`
---
-ALTER TABLE `vital_signs`
-  ADD CONSTRAINT `vital_signs_ibfk_1` FOREIGN KEY (`medical_record_id`) REFERENCES `medical_records` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `vital_signs_ibfk_2` FOREIGN KEY (`recorded_by`) REFERENCES `staff` (`id`) ON DELETE CASCADE;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+  ADD CONSTRAINT `patients_ibfk_1`

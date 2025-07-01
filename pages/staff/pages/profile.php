@@ -10,7 +10,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Get staff information
-$staff_query = "SELECT s.*, u.email, u.username, u.approval_status
+$staff_query = "SELECT s.*, u.email, u.approval_status
                 FROM staff s
                 JOIN users u ON s.user_id = u.id
                 WHERE u.id = ?";

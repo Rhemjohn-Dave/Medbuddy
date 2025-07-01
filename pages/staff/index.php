@@ -51,6 +51,11 @@ $sidebar_menu = [
         'label' => 'Vital Signs'
     ],
     [
+        'page' => 'lab-requests',
+        'icon' => 'science',
+        'label' => 'Lab Requests'
+    ],
+    [
         'page' => 'patients',
         'icon' => 'personal_injury',
         'label' => 'Patients'

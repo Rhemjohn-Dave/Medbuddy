@@ -86,6 +86,11 @@ function renderPatientDetailsModal($db, $patient_id) {
     $stmt->execute();
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Fetch lab requests for this patient
+    $stmt = $db->prepare("SELECT lr.*, d.first_name AS doctor_first, d.last_name AS doctor_last FROM lab_requests lr JOIN doctors d ON lr.doctor_id = d.id WHERE lr.patient_id = ? ORDER BY lr.requested_at DESC");
+    $stmt->execute([$patient_id]);
+    $lab_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     $full_name = trim(($patient['first_name'] ?? '') . ' ' . ($patient['middle_name'] ?? '') . ' ' . ($patient['last_name'] ?? ''));
     ?>
     <div class="modal fade" id="viewPatientModal<?php echo $patient_id; ?>" tabindex="-1" aria-labelledby="viewPatientModalLabel<?php echo $patient_id; ?>" aria-hidden="true">
@@ -132,6 +137,11 @@ function renderPatientDetailsModal($db, $patient_id) {
                                 <span class="material-icons align-middle me-1">history</span> Appointment History
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="labresults-tab<?php echo $patient_id; ?>" data-bs-toggle="tab" data-bs-target="#labresults<?php echo $patient_id; ?>" type="button" role="tab" aria-controls="labresults<?php echo $patient_id; ?>" aria-selected="false">
+                                <span class="material-icons align-middle me-1">science</span> Lab Results
+                            </button>
+                        </li>
                     </ul>
                     <div class="tab-content pt-3" id="patientTabContent<?php echo $patient_id; ?>">
                         <!-- Personal Info Tab -->
@@ -172,8 +182,8 @@ function renderPatientDetailsModal($db, $patient_id) {
                                                 <dt class="col-5">Medical History:</dt><dd class="col-7"><?php echo nl2br(htmlspecialchars($patient['medical_history'] ?? '<span class=\'text-muted\'>-</span>')); ?></dd>
                                                 <dt class="col-5">Allergies:</dt><dd class="col-7"><?php echo nl2br(htmlspecialchars($patient['allergies'] ?? '<span class=\'text-muted\'>-</span>')); ?></dd>
                                             </dl>
-            </div>
-        </div>
+                                        </div>
+                                    </div>
                                     <hr>
                                     <div class="row g-3">
                                         <div class="col-md-6">
@@ -185,16 +195,16 @@ function renderPatientDetailsModal($db, $patient_id) {
                                             <dl class="row mb-0">
                                                 <dt class="col-5">Updated At:</dt><dd class="col-7"><?php echo htmlspecialchars($patient['updated_at'] ?? '<span class=\'text-muted\'>-</span>'); ?></dd>
                                             </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
                         <!-- Medical Records Tab -->
                         <div class="tab-pane fade" id="records<?php echo $patient_id; ?>" role="tabpanel" aria-labelledby="records-tab<?php echo $patient_id; ?>">
                             <?php if ($vital_signs): ?>
                                 <div class="card shadow-sm border-0 mb-4" style="background:#f1f3f4;">
-                <div class="card-body">
+                                    <div class="card-body">
                                         <h6 class="text-primary mb-3"><span class="material-icons align-middle me-1">monitor_heart</span> Latest Vital Signs</h6>
                                         <div class="row g-3">
                                             <div class="col-md-4"><strong>BP:</strong> <?php
@@ -332,6 +342,54 @@ function renderPatientDetailsModal($db, $patient_id) {
                                 </div>
                             <?php endif; ?>
                         </div>
+                        <!-- Lab Results Tab -->
+                        <div class="tab-pane fade" id="labresults<?php echo $patient_id; ?>" role="tabpanel" aria-labelledby="labresults-tab<?php echo $patient_id; ?>">
+                            <div class="card shadow-sm border-0 mb-3" style="background:#f8f9fa;">
+                                <div class="card-body">
+                                    <h6 class="text-primary mb-3"><span class="material-icons align-middle me-1">science</span> Lab Results</h6>
+                                    <?php if (empty($lab_requests)): ?>
+                                        <p class="text-muted">No lab requests found.</p>
+                                    <?php else: ?>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Test Type</th>
+                                                        <th>Notes</th>
+                                                        <th>Status</th>
+                                                        <th>Requested At</th>
+                                                        <th>Requested By</th>
+                                                        <th>Result</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                <?php foreach ($lab_requests as $req): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($req['test_type']) ?></td>
+                                                        <td><?= htmlspecialchars($req['notes']) ?></td>
+                                                        <td><span class="badge bg-info text-dark"><?= htmlspecialchars($req['status']) ?></span></td>
+                                                        <td><?= htmlspecialchars($req['requested_at']) ?></td>
+                                                        <td><?= htmlspecialchars($req['doctor_first'] . ' ' . $req['doctor_last']) ?></td>
+                                                        <td>
+                                                            <?php
+                                                            if (!empty($req['result_file'])) {
+                                                                echo '<a href="/Medbuddy/uploads/lab_results/' . htmlspecialchars($req['result_file']) . '" target="_blank">View PDF</a>';
+                                                                if ($req['result']) {
+                                                                    echo '<br>';
+                                                                }
+                                                            }
+                                                            echo $req['result'] ? nl2br(htmlspecialchars($req['result'])) : '<span class="text-muted">Pending</span>';
+                                                            ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -391,6 +449,9 @@ function renderPatientDetailsModal($db, $patient_id) {
                                         <a href="#" class="btn btn-sm btn-outline-success" title="Schedule Appointment" onclick="openScheduleModal('<?php echo htmlspecialchars($patient['patient_name']); ?>', <?php echo $patient['id']; ?>); return false;">
                                             <span class="material-icons">event</span>
                                         </a>
+                                        <a href="#" class="btn btn-sm btn-outline-info" title="Request Lab" onclick="openLabRequestModal(<?php echo $patient['id']; ?>, <?php echo $doctor_id; ?>); return false;">
+                                            <span class="material-icons">science</span>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -441,6 +502,43 @@ function renderPatientDetailsModal($db, $patient_id) {
         </div>
     </div>
 </div>
+<!-- Lab Request Modal -->
+<div class="modal fade" id="labRequestModal" tabindex="-1" aria-labelledby="labRequestModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="labRequestModalLabel">Request Lab Test</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="labRequestForm">
+          <input type="hidden" name="patient_id" id="labRequestPatientId">
+          <input type="hidden" name="doctor_id" id="labRequestDoctorId">
+          <div class="mb-3">
+            <label for="test_type" class="form-label">Lab Test Type</label>
+            <select class="form-select" id="test_type" name="test_type" required>
+              <option value="">Select test...</option>
+              <option value="Ultrasound">Ultrasound</option>
+              <option value="CBC">CBC</option>
+              <option value="X-ray">X-ray</option>
+              <option value="Urinalysis">Urinalysis</option>
+              <option value="Blood Chemistry">Blood Chemistry</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="lab_notes" class="form-label">Notes</label>
+            <textarea class="form-control" id="lab_notes" name="notes" rows="2"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 // Simple search filter for patient table
 const searchInput = document.getElementById('searchPatient');
@@ -480,6 +578,38 @@ function openScheduleModal(patientName, patientId) {
     const modal = new bootstrap.Modal(document.getElementById('scheduleAppointmentModal'));
     modal.show();
 }
+function openLabRequestModal(patientId, doctorId) {
+    document.getElementById('labRequestPatientId').value = patientId;
+    document.getElementById('labRequestDoctorId').value = doctorId;
+    document.getElementById('test_type').value = '';
+    document.getElementById('lab_notes').value = '';
+    var modal = new bootstrap.Modal(document.getElementById('labRequestModal'));
+    modal.show();
+}
+document.getElementById('labRequestForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    fetch('../../api/lab_requests.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Lab request submitted successfully!');
+            var modal = bootstrap.Modal.getInstance(document.getElementById('labRequestModal'));
+            modal.hide();
+        } else {
+            alert('Error submitting lab request: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        alert('An error occurred while submitting lab request.');
+    });
+});
 </script> 
 <?php
 // Render all modals after the table

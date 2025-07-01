@@ -172,8 +172,8 @@ try {
                                             <span class="badge bg-primary">Scheduled</span>
                                             <div class="mt-2">
                                                 <!-- Add action buttons like View Patient, Start Consultation etc. -->
-                                                <a href="?page=consultation&appointment_id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-outline-success">
-                                                    <span class="material-icons">medical_services</span> Start Consultation
+                                                <a href="?page=appointments" class="btn btn-sm btn-outline-success">
+                                                    <span class="material-icons">medical_services</span> Go to Appointments
                                                 </a>
                                             </div>
                                         </div>
