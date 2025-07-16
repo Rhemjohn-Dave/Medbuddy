@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultation Appointments - MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-md-block" id="sidebar">
+                <div class="d-flex justify-content-between align-items-center py-3 px-3 border-bottom">
+                    <h5 class="m-0 fw-bold text-primary">MedBuddy</h5>
+                    <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+                <div class="collapse d-md-block" id="sidebarMenu">
+                    <div class="pt-3" id="sidebarContent">
+                        <!-- Sidebar menu items will be loaded here via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-md navbar-light bg-white mb-4 border-bottom">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">Consultation Appointments</span>
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-decoration-none text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                    <span class="material-icons me-2">account_circle</span>
+                                    <span id="userName">Assistant Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="profile.html"><span class="material-icons me-2">person</span>Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">notifications</span>Notifications</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="login.html"><span class="material-icons me-2">logout</span>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Consultation Content -->
+                <div class="container-fluid">
+                    <!-- Header with Actions -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="mb-0">Manage Appointment Requests</h4>
+                                        <div class="ms-auto">
+                                            <select class="form-select" id="doctorFilter">
+                                                <option value="all" selected>All Doctors</option>
+                                                <option value="d1">Dr. Sarah Johnson</option>
+                                                <option value="d2">Dr. Robert Chen</option>
+                                                <option value="d3">Dr. James Miller</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row align-items-end">
+                                        <div class="col-md-3 mb-3 mb-md-0">
+                                            <label for="dateFilter" class="form-label">Filter by Date</label>
+                                            <select class="form-select" id="dateFilter">
+                                                <option value="all" selected>All Dates</option>
+                                                <option value="today">Today</option>
+                                                <option value="tomorrow">Tomorrow</option>
+                                                <option value="week">This Week</option>
+                                                <option value="custom">Custom Date</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3 mb-md-0" id="customDateContainer" style="display: none;">
+                                            <label for="customDate" class="form-label">Select Date</label>
+                                            <input type="date" class="form-control" id="customDate">
+                                        </div>
+                                        <div class="col-md-3 mb-3 mb-md-0">
+                                            <label for="statusFilter" class="form-label">Filter by Status</label>
+                                            <select class="form-select" id="statusFilter">
+                                                <option value="all" selected>All Statuses</option>
+                                                <option value="pending">Pending</option>
+                                                <option value="confirmed">Confirmed</option>
+                                                <option value="rejected">Rejected</option>
+                                                <option value="completed">Completed</option>
+                                                <option value="cancelled">Cancelled</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3 mb-md-0">
+                                            <label for="searchInput" class="form-label">Search Patient</label>
+                                            <input type="text" class="form-control" id="searchInput" placeholder="Name or ID...">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Appointments Section -->
+                    <div class="row mb-4" id="pendingAppointmentsSection">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Pending Appointment Requests</h5>
+                                    <span class="badge bg-primary" id="pendingCount">10</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Patient</th>
+                                                    <th>Doctor</th>
+                                                    <th>Date</th>
+                                                    <th>Time</th>
+                                                    <th>Reason</th>
+                                                    <th>Urgent</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="pendingAppointmentsList">
+                                                <!-- Will be populated via JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- All Appointments -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">All Appointments</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Patient</th>
+                                                    <th>Doctor</th>
+                                                    <th>Date</th>
+                                                    <th>Time</th>
+                                                    <th>Reason</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="allAppointmentsList">
+                                                <!-- Will be populated via JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Appointment Details Modal -->
+    <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewAppointmentModalLabel">Appointment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Patient Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; font-size: 1.2rem;">
+                                    <span id="patientInitials">JS</span>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0" id="patientName">John Smith</h5>
+                                    <p class="text-muted mb-0" id="patientId">ID: P12345</p>
+                                </div>
+                                <div class="ms-auto">
+                                    <button class="btn btn-outline-primary" id="viewPatientHistoryBtn">
+                                        <span class="material-icons align-text-bottom">history</span> Medical History
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted">Age</p>
+                            <p class="mb-0 fw-bold" id="patientAge">45</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted">Phone</p>
+                            <p class="mb-0 fw-bold" id="patientPhone">555-123-4567</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted">Email</p>
+                            <p class="mb-0 fw-bold" id="patientEmail">john@example.com</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted">Last Visit</p>
+                            <p class="mb-0 fw-bold" id="patientLastVisit">Mar 12, 2023</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Appointment Information -->
+                    <h5 class="mb-3">Appointment Information</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted">Doctor</p>
+                            <p class="mb-0 fw-bold" id="modalDoctorName">Dr. Sarah Johnson</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted">Specialty</p>
+                            <p class="mb-0 fw-bold" id="modalSpecialty">Cardiology</p>
+                        </div>
+                        <div class="col-md-2">
+                            <p class="mb-1 text-muted">Date</p>
+                            <p class="mb-0 fw-bold" id="modalDate">Apr 15, 2023</p>
+                        </div>
+                        <div class="col-md-2">
+                            <p class="mb-1 text-muted">Time</p>
+                            <p class="mb-0 fw-bold" id="modalTime">10:00 AM</p>
+                        </div>
+                        <div class="col-md-2">
+                            <p class="mb-1 text-muted">Status</p>
+                            <p class="mb-0 fw-bold" id="modalStatus"><span class="badge bg-warning">Pending</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted">Urgent</p>
+                            <p class="mb-0 fw-bold" id="modalUrgent">No</p>
+                        </div>
+                        <div class="col-md-9">
+                            <p class="mb-1 text-muted">Reason for Appointment</p>
+                            <p class="mb-0 fw-bold" id="modalReason">Regular check-up for heart condition</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <p class="mb-1 text-muted">Symptoms / Description</p>
+                            <p class="mb-0 fw-bold" id="modalSymptoms">Occasional chest pain and shortness of breath</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Notes and Response Section -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="doctorNotes" class="form-label">Doctor's Notes</label>
+                                <textarea class="form-control" id="doctorNotes" rows="3" placeholder="Enter notes for the doctor..."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="patientResponse" class="form-label">Response to Patient</label>
+                                <textarea class="form-control" id="patientResponse" rows="3" placeholder="Enter a response to the patient..."></textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="sendNotificationCheck" checked>
+                                <label class="form-check-label" for="sendNotificationCheck">
+                                    Send notification to patient
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer for Pending Appointments -->
+                <div class="modal-footer" id="pendingAppointmentFooter">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-danger" id="rejectAppointmentBtn">Reject</button>
+                    <button type="button" class="btn btn-success" id="approveAppointmentBtn">Approve</button>
+                </div>
+                
+                <!-- Modal Footer for Already Processed Appointments -->
+                <div class="modal-footer" id="processedAppointmentFooter" style="display: none;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="updateNotesBtn">Update Notes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Patient Medical History Modal -->
+    <div class="modal fade" id="patientHistoryModal" tabindex="-1" aria-labelledby="patientHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="patientHistoryModalLabel">Patient Medical History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="mb-3">Medical Conditions</h6>
+                            <ul class="list-group mb-4" id="medicalConditionsList">
+                                <li class="list-group-item">Loading medical conditions...</li>
+                            </ul>
+                            
+                            <h6 class="mb-3">Allergies</h6>
+                            <ul class="list-group mb-4" id="allergiesList">
+                                <li class="list-group-item">Loading allergies...</li>
+                            </ul>
+                            
+                            <h6 class="mb-3">Current Medications</h6>
+                            <ul class="list-group mb-4" id="medicationsList">
+                                <li class="list-group-item">Loading medications...</li>
+                            </ul>
+                            
+                            <h6 class="mb-3">Previous Surgeries</h6>
+                            <ul class="list-group mb-4" id="surgeriesList">
+                                <li class="list-group-item">Loading surgeries...</li>
+                            </ul>
+                            
+                            <h6 class="mb-3">Recent Vital Signs</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>BP</th>
+                                            <th>Pulse</th>
+                                            <th>Temp</th>
+                                            <th>Resp</th>
+                                            <th>O2 Sat</th>
+                                            <th>Weight</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vitalSignsTable">
+                                        <tr>
+                                            <td colspan="7" class="text-center">Loading vital signs...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="printHistoryBtn">Print History</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    
+    <!-- Load data and utilities first -->
+    <script src="../../assets/js/mock-data.js"></script>
+    <script src="../../assets/js/utils.js"></script>
+    
+    <!-- Then load the page-specific JS -->
+    <script src="../../assets/js/consultation-appointments.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize sidebar
+            createSidebar('assistant');
+            
+            // Set current user info
+            const currentAssistant = mockData.users.find(user => user.role === 'assistant');
+            
+            if (currentAssistant) {
+                document.getElementById('userName').textContent = `${currentAssistant.firstName} ${currentAssistant.lastName}`;
+            }
+            
+            // Populate doctor filter
+            const doctorFilter = document.getElementById('doctorFilter');
+            if (doctorFilter) {
+                const doctors = mockData.users.filter(user => user.role === 'doctor');
+                
+                // Clear existing options except the first one
+                while (doctorFilter.options.length > 1) {
+                    doctorFilter.remove(1);
+                }
+                
+                // Add doctors from mock data
+                doctors.forEach(doctor => {
+                    const option = document.createElement('option');
+                    option.value = doctor.id;
+                    option.textContent = `Dr. ${doctor.firstName} ${doctor.lastName}`;
+                    doctorFilter.appendChild(option);
+                });
+            }
+            
+            // Toggle sidebar on mobile
+            const sidebarMenuToggle = document.querySelector('[data-bs-target="#sidebarMenu"]');
+            if (sidebarMenuToggle) {
+                sidebarMenuToggle.addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.toggle('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant Dashboard | MedBuddy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-md-block" id="sidebar">
+                <div class="d-flex justify-content-between align-items-center py-3 px-3 border-bottom">
+                    <h5 class="m-0 fw-bold text-primary">MedBuddy</h5>
+                    <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+                <div class="collapse d-md-block" id="sidebarMenu">
+                    <div class="pt-3" id="sidebarContent">
+                        <!-- Sidebar menu items will be loaded here via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-md navbar-light bg-white mb-4 border-bottom">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">Assistant Dashboard</span>
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-decoration-none text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                    <span class="material-icons me-2">account_circle</span>
+                                    <span id="userName">Assistant Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="profile.html"><span class="material-icons me-2">person</span>Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><span class="material-icons me-2">notifications</span>Notifications</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="login.html"><span class="material-icons me-2">logout</span>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Dashboard Content -->
+                <div class="container-fluid">
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-center mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Today's Appointments</h5>
+                                    <h2 class="display-4 mb-0 text-primary" id="todaysAppointmentsCount">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Pending Approval</h5>
+                                    <h2 class="display-4 mb-0 text-warning" id="pendingApprovalsCount">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Patients Today</h5>
+                                    <h2 class="display-4 mb-0 text-success" id="patientsTodayCount">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Pending Vital Signs</h5>
+                                    <h2 class="display-4 mb-0 text-danger" id="pendingVitalSignsCount">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Consultation Appointment List -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Consultation Appointment List</h5>
+                            <button id="refreshAppointments" class="btn btn-sm btn-outline-primary">
+                                <span class="material-icons align-text-bottom">refresh</span> Refresh
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Patient Name</th>
+                                            <th>Age/Gender</th>
+                                            <th>Purpose</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="appointmentsList">
+                                        <tr>
+                                            <td colspan="6" class="text-center">Loading appointments...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs for Patient List and Vital Signs -->
+                    <ul class="nav nav-tabs mb-3" id="assistantTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="patients-tab" data-bs-toggle="tab" data-bs-target="#patients" type="button" role="tab" aria-controls="patients" aria-selected="true">Patients</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="vital-signs-tab" data-bs-toggle="tab" data-bs-target="#vital-signs" type="button" role="tab" aria-controls="vital-signs" aria-selected="false">Vital Signs Entry</button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="assistantTabContent">
+                        <!-- Patient List Tab -->
+                        <div class="tab-pane fade show active" id="patients" role="tabpanel" aria-labelledby="patients-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="row g-3 align-items-center">
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><span class="material-icons">search</span></span>
+                                                <input type="text" class="form-control" id="searchPatient" placeholder="Search patients...">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select class="form-select" id="filterCondition">
+                                                <option value="">Filter by Condition</option>
+                                                <option value="hypertension">Hypertension</option>
+                                                <option value="diabetes">Diabetes</option>
+                                                <option value="asthma">Asthma</option>
+                                                <option value="arthritis">Arthritis</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select class="form-select" id="sortPatients">
+                                                <option value="name_asc">Name (A-Z)</option>
+                                                <option value="name_desc">Name (Z-A)</option>
+                                                <option value="recent">Most Recent</option>
+                                                <option value="oldest">Oldest</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <button class="btn btn-outline-primary" id="exportPatients">
+                                                <span class="material-icons align-text-bottom">file_download</span> Export
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Patient Name</th>
+                                                    <th>Age/Gender</th>
+                                                    <th>Contact Info</th>
+                                                    <th>Last Visit</th>
+                                                    <th>Medical Conditions</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="patientListTable">
+                                                <tr>
+                                                    <td colspan="6" class="text-center">Loading patients...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Vital Signs Entry Tab -->
+                        <div class="tab-pane fade" id="vital-signs" role="tabpanel" aria-labelledby="vital-signs-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <h5 class="mb-0">Patient Vital Signs Entry</h5>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><span class="material-icons">search</span></span>
+                                                <input type="text" class="form-control" id="searchVitalsPatient" placeholder="Search patient name or ID...">
+                                                <button class="btn btn-primary" id="searchVitalsBtn">Search</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="vitalSignsForm" class="d-none">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="d-flex align-items-center mb-3">
+                                                            <img src="../../assets/images/avatars/patient-avatar.png" alt="Patient" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                                            <div>
+                                                                <h5 class="mb-1" id="vitalsPatientName">Patient Name</h5>
+                                                                <p class="mb-0 text-muted" id="vitalsPatientDetails">Age / Gender • ID: PAT-123</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <form id="vitalSignsEntryForm">
+                                            <input type="hidden" id="vitalsPatientId">
+                                            <div class="row mb-3">
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Temperature (°C)</label>
+                                                        <input type="number" class="form-control" id="temperature" step="0.1" min="35" max="42">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Blood Pressure (mmHg)</label>
+                                                        <div class="input-group">
+                                                            <input type="number" class="form-control" id="systolic" placeholder="Systolic" min="70" max="200">
+                                                            <span class="input-group-text">/</span>
+                                                            <input type="number" class="form-control" id="diastolic" placeholder="Diastolic" min="40" max="120">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Pulse Rate (bpm)</label>
+                                                        <input type="number" class="form-control" id="pulseRate" min="40" max="200">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Respiratory Rate (rpm)</label>
+                                                        <input type="number" class="form-control" id="respiratoryRate" min="8" max="40">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mb-3">
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Oxygen Saturation (%)</label>
+                                                        <input type="number" class="form-control" id="oxygenSaturation" min="70" max="100">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Weight (kg)</label>
+                                                        <input type="number" class="form-control" id="weight" step="0.1" min="1" max="300">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Height (cm)</label>
+                                                        <input type="number" class="form-control" id="height" min="30" max="250">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Blood Glucose (mg/dL)</label>
+                                                        <input type="number" class="form-control" id="bloodGlucose" min="20" max="600">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">Notes</label>
+                                                <textarea class="form-control" id="vitalsNotes" rows="3"></textarea>
+                                            </div>
+                                            
+                                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                <button type="button" class="btn btn-secondary me-md-2" id="resetVitalsForm">Reset</button>
+                                                <button type="submit" class="btn btn-primary" id="saveVitalsBtn">Save Vital Signs</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Placeholder when no patient is selected -->
+                                    <div id="noPatientSelected" class="text-center py-5">
+                                        <img src="../../assets/images/avatars/patient-avatar.png" alt="Select Patient" class="mb-3" width="100">
+                                        <h5>No Patient Selected</h5>
+                                        <p class="text-muted">Please search for a patient to record vital signs</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Appointment Details -->
+    <div class="modal fade" id="appointmentDetailsModal" tabindex="-1" aria-labelledby="appointmentDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appointmentDetailsModalLabel">Appointment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Patient Information</h6>
+                            <div class="d-flex align-items-center">
+                                <img src="../../assets/images/avatars/patient-avatar.png" alt="Patient" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0" id="modalPatientName">John Doe</h6>
+                                    <p class="mb-0 text-muted" id="modalPatientInfo">45 / Male • ID: PAT-123</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Appointment Information</h6>
+                            <p class="mb-1" id="modalAppointmentDate">Date: 01/01/2023</p>
+                            <p class="mb-1" id="modalAppointmentTime">Time: 09:00 AM</p>
+                            <p class="mb-0" id="modalAppointmentPurpose">Purpose: Annual Check-up</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <h6>Notes</h6>
+                        <p id="modalAppointmentNotes">No notes available</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="rejectAppointment">Reject</button>
+                    <button type="button" class="btn btn-success" id="acceptAppointment">Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    
+    <!-- Load data and utilities first -->
+    <script src="../../assets/js/mock-data.js"></script>
+    <script src="../../assets/js/utils.js"></script>
+    
+    <!-- Then load the page-specific JS -->
+    <script src="../../assets/js/assistant-dashboard.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize sidebar
+            createSidebar('assistant');
+            
+            // Set current user info
+            const currentAssistant = mockData.users.find(user => user.role === 'assistant');
+            
+            if (currentAssistant) {
+                document.getElementById('userName').textContent = `${currentAssistant.firstName} ${currentAssistant.lastName}`;
+            }
+            
+            // Toggle sidebar on mobile
+            const sidebarMenuToggle = document.querySelector('[data-bs-target="#sidebarMenu"]');
+            if (sidebarMenuToggle) {
+                sidebarMenuToggle.addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.toggle('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
