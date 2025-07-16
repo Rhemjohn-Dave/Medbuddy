@@ -7,6 +7,15 @@ if (!isset($conn)) {
 // Get selected date from request, default to today
 $selected_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
 
+// Get staff's assigned clinics
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$staff_user_id = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT sc.clinic_id FROM staff_clinics sc JOIN staff s ON sc.staff_id = s.id WHERE s.user_id = ?");
+$stmt->execute([$staff_user_id]);
+$assigned_clinics = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
 try {
     // Get total appointments for selected date
     $stmt = $conn->prepare("
@@ -47,30 +56,38 @@ try {
     $stmt->execute();
     $upcoming_appointments = $stmt->fetchColumn();
 
-    // Get today's consultations with vital signs status
-    $stmt = $conn->prepare("
-        SELECT 
-            a.id,
-            a.date,
-            a.time,
-            a.status,
-            a.vitals_recorded,
-            p.first_name as patient_first_name,
-            p.last_name as patient_last_name,
-            p.contact_number as patient_contact,
-            d.first_name as doctor_first_name,
-            d.last_name as doctor_last_name,
-            c.name as clinic_name
-        FROM appointments a
-        JOIN patients p ON a.patient_id = p.id
-        JOIN doctors d ON a.doctor_id = d.id
-        JOIN clinics c ON a.clinic_id = c.id
-        WHERE DATE(a.date) = ?
-        AND a.status = 'scheduled'
-        ORDER BY a.time ASC
-    ");
-    $stmt->execute([$selected_date]);
-    $consultations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Get today's consultations with vital signs status, filtered by assigned clinics
+    if (!empty($assigned_clinics)) {
+        $placeholders = implode(',', array_fill(0, count($assigned_clinics), '?'));
+        $consult_sql = "
+            SELECT 
+                a.id,
+                a.date,
+                a.time,
+                a.status,
+                a.vitals_recorded,
+                p.first_name as patient_first_name,
+                p.last_name as patient_last_name,
+                p.contact_number as patient_contact,
+                d.first_name as doctor_first_name,
+                d.last_name as doctor_last_name,
+                c.name as clinic_name
+            FROM appointments a
+            JOIN patients p ON a.patient_id = p.id
+            JOIN doctors d ON a.doctor_id = d.id
+            JOIN clinics c ON a.clinic_id = c.id
+            WHERE DATE(a.date) = ?
+            AND a.status = 'scheduled'
+            AND a.clinic_id IN ($placeholders)
+            ORDER BY a.time ASC
+        ";
+        $params = array_merge([$selected_date], $assigned_clinics);
+        $stmt = $conn->prepare($consult_sql);
+        $stmt->execute($params);
+        $consultations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $consultations = [];
+    }
 
     // Get recent activities (last 5 appointments with status changes)
     $stmt = $conn->prepare("
