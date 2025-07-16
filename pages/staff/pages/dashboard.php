@@ -12,53 +12,47 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 $staff_user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT sc.clinic_id FROM staff_clinics sc JOIN staff s ON sc.staff_id = s.id WHERE s.user_id = ?");
+$stmt = $conn->prepare("SELECT sc.clinic_id, c.name, c.address FROM staff_clinics sc JOIN staff s ON sc.staff_id = s.id JOIN clinics c ON sc.clinic_id = c.id WHERE s.user_id = ? AND c.status = 'active'");
 $stmt->execute([$staff_user_id]);
-$assigned_clinics = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$assigned_clinics = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 try {
-    // Get total appointments for selected date
-    $stmt = $conn->prepare("
-        SELECT COUNT(*) 
-        FROM appointments 
-        WHERE DATE(date) = ? AND status = 'scheduled'
-    ");
-    $stmt->execute([$selected_date]);
-    $total_appointments = $stmt->fetchColumn();
+    // Get total appointments for selected date (in assigned clinics)
+    if (!empty($assigned_clinics)) {
+        $clinic_ids = array_column($assigned_clinics, 'clinic_id');
+        $placeholders = implode(',', array_fill(0, count($clinic_ids), '?'));
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM appointments WHERE DATE(date) = ? AND status = 'scheduled' AND clinic_id IN ($placeholders)");
+        $params = array_merge([$selected_date], $clinic_ids);
+        $stmt->execute($params);
+        $total_appointments = $stmt->fetchColumn();
 
-    // Get pending vital signs for today
-    $stmt = $conn->prepare("
-        SELECT COUNT(*) 
-        FROM appointments a 
-        WHERE DATE(a.date) = ? 
-        AND a.status = 'scheduled' 
-        AND (a.vitals_recorded = 0 OR a.vitals_recorded IS NULL)
-    ");
-    $stmt->execute([$selected_date]);
-    $pending_vitals = $stmt->fetchColumn();
+        // Get pending vital signs for today (in assigned clinics)
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM appointments a WHERE DATE(a.date) = ? AND a.status = 'scheduled' AND (a.vitals_recorded = 0 OR a.vitals_recorded IS NULL) AND a.clinic_id IN ($placeholders)");
+        $stmt->execute($params);
+        $pending_vitals = $stmt->fetchColumn();
 
-    // Get completed consultations today
-    $stmt = $conn->prepare("
-        SELECT COUNT(*) 
-        FROM appointments 
-        WHERE DATE(date) = ? AND status = 'completed'
-    ");
-    $stmt->execute([$selected_date]);
-    $completed_consultations = $stmt->fetchColumn();
+        // Get completed consultations today (in assigned clinics)
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM appointments WHERE DATE(date) = ? AND status = 'completed' AND clinic_id IN ($placeholders)");
+        $stmt->execute($params);
+        $completed_consultations = $stmt->fetchColumn();
 
-    // Get upcoming appointments (next 7 days)
-    $stmt = $conn->prepare("
-        SELECT COUNT(*) 
-        FROM appointments 
-        WHERE date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-        AND status = 'scheduled'
-    ");
-    $stmt->execute();
-    $upcoming_appointments = $stmt->fetchColumn();
+        // Get upcoming appointments (next 7 days, in assigned clinics)
+        $upcoming_params = $clinic_ids;
+        $upcoming_placeholders = implode(',', array_fill(0, count($clinic_ids), '?'));
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM appointments WHERE date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND status = 'scheduled' AND clinic_id IN ($upcoming_placeholders)");
+        $stmt->execute($upcoming_params);
+        $upcoming_appointments = $stmt->fetchColumn();
+    } else {
+        $total_appointments = 0;
+        $pending_vitals = 0;
+        $completed_consultations = 0;
+        $upcoming_appointments = 0;
+    }
 
     // Get today's consultations with vital signs status, filtered by assigned clinics
     if (!empty($assigned_clinics)) {
-        $placeholders = implode(',', array_fill(0, count($assigned_clinics), '?'));
+        $clinic_ids = array_column($assigned_clinics, 'clinic_id');
+        $placeholders = implode(',', array_fill(0, count($clinic_ids), '?'));
         $consult_sql = "
             SELECT 
                 a.id,
@@ -81,7 +75,7 @@ try {
             AND a.clinic_id IN ($placeholders)
             ORDER BY a.time ASC
         ";
-        $params = array_merge([$selected_date], $assigned_clinics);
+        $params = array_merge([$selected_date], $clinic_ids);
         $stmt = $conn->prepare($consult_sql);
         $stmt->execute($params);
         $consultations = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -111,19 +105,27 @@ try {
     $recent_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get appointment statistics for the chart (last 7 days)
-    $stmt = $conn->prepare("
-        SELECT 
-            DATE(date) as appointment_date,
-            COUNT(*) as total,
-            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-            SUM(CASE WHEN vitals_recorded = 1 THEN 1 ELSE 0 END) as vitals_recorded
-        FROM appointments
-        WHERE date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
-        GROUP BY DATE(date)
-        ORDER BY date ASC
-    ");
-    $stmt->execute();
-    $appointment_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($assigned_clinics)) {
+        $clinic_ids = array_column($assigned_clinics, 'clinic_id');
+        $placeholders = implode(',', array_fill(0, count($clinic_ids), '?'));
+        $stats_sql = "
+            SELECT 
+                DATE(date) as appointment_date,
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN vitals_recorded = 1 THEN 1 ELSE 0 END) as vitals_recorded
+            FROM appointments
+            WHERE date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
+            AND clinic_id IN ($placeholders)
+            GROUP BY DATE(date)
+            ORDER BY date ASC
+        ";
+        $stmt = $conn->prepare($stats_sql);
+        $stmt->execute($clinic_ids);
+        $appointment_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $appointment_stats = [];
+    }
 
 } catch (PDOException $e) {
     error_log("Dashboard error: " . $e->getMessage());
@@ -159,6 +161,29 @@ try {
             </div>
         </div>
     </div>
+
+    <!-- Assigned Clinics Section -->
+    <?php if (!empty($assigned_clinics)): ?>
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">My Assigned Clinics</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <?php foreach ($assigned_clinics as $clinic): ?>
+                            <li class="list-group-item">
+                                <strong><?php echo htmlspecialchars($clinic['name']); ?></strong><br>
+                                <small class="text-muted"><?php echo htmlspecialchars($clinic['address']); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
