@@ -396,291 +396,121 @@ try {
 
 <!-- Main Content -->
 <div class="container-fluid py-4">
-    <!-- Calendar View -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Patient Appointments</h5>
-                <div class="d-flex gap-2">
-                    <div class="btn-group">
-                        <button class="btn btn-outline-primary btn-sm" id="calendarPrev" title="Previous">
-                            <span class="material-icons">chevron_left</span>
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" id="calendarToday" title="Today">Today</button>
-                        <button class="btn btn-outline-primary btn-sm" id="calendarNext" title="Next">
-                            <span class="material-icons">chevron_right</span>
-                        </button>
+    <!-- Calendar and Upcoming Appointments Row -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Patient Appointments</h5>
+                        <div class="d-flex gap-2">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary btn-sm" id="calendarPrev" title="Previous">
+                                    <span class="material-icons">chevron_left</span>
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" id="calendarToday" title="Today">Today</button>
+                                <button class="btn btn-outline-primary btn-sm" id="calendarNext" title="Next">
+                                    <span class="material-icons">chevron_right</span>
+                                </button>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary btn-sm active" data-view="timeGridWeek" title="Week View">Week</button>
+                                <button class="btn btn-outline-primary btn-sm" data-view="timeGridDay" title="Day View">Day</button>
+                                <button class="btn btn-outline-primary btn-sm" data-view="dayGridMonth" title="Month View">Month</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="btn-group">
-                        <button class="btn btn-outline-primary btn-sm active" data-view="timeGridWeek" title="Week View">Week</button>
-                        <button class="btn btn-outline-primary btn-sm" data-view="timeGridDay" title="Day View">Day</button>
-                        <button class="btn btn-outline-primary btn-sm" data-view="dayGridMonth" title="Month View">Month</button>
-                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="calendar"></div>
                 </div>
             </div>
         </div>
-        <div class="card-body p-0">
-            <div id="calendar"></div>
-        </div>
-    </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Upcoming Appointments</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="upcomingAppointmentsList">
+                        <?php
+                        // Get upcoming appointments for the doctor
+                        $upcoming_sql = "SELECT a.*, 
+                                        p.first_name as patient_first_name, 
+                                        p.last_name as patient_last_name,
+                                        c.name as clinic_name,
+                                        c.address as clinic_address
+                                        FROM appointments a
+                                        JOIN patients p ON a.patient_id = p.id
+                                        JOIN clinics c ON a.clinic_id = c.id
+                                        WHERE a.doctor_id = ? 
+                                        AND a.date >= CURDATE()
+                                        AND a.status != 'cancelled'
+                                        ORDER BY a.date ASC, a.time ASC
+                                        LIMIT 5";
+                        $upcoming_stmt = $db->prepare($upcoming_sql);
+                        $upcoming_stmt->execute([$doctor_id]);
+                        $upcoming_appointments = $upcoming_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    <!-- Today's Appointments -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Today's Appointments</h5>
-                <div class="text-muted small">
-                    <?php echo date('F d, Y'); ?>
-                </div>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Patient Name</th>
-                            <th>Age/Gender</th>
-                            <th>Clinic</th>
-                            <th>Purpose</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($today_appointments)): ?>
-                            <tr>
-                                <td colspan="7" class="text-center text-muted">No appointments for today</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($today_appointments as $appointment): 
-                                $age = date_diff(date_create($appointment['birthdate']), date_create('today'))->y;
-                            ?>
-                            <tr>
-                                <td><?php echo date('h:i A', strtotime($appointment['time'])); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['patient_name']); ?></td>
-                                <td><?php echo $age . '/' . $appointment['gender']; ?></td>
-                                <td><?php echo htmlspecialchars($appointment['clinic_name']); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['purpose']); ?></td>
-                                <td>
-                                    <span class="badge bg-<?php echo (
-                                        $appointment['status'] == 'scheduled' ? 'primary' : 
-                                        ($appointment['status'] == 'completed' ? 'success' : 
-                                        ($appointment['status'] == 'cancelled' ? 'danger' : ($appointment['status'] == 'no-show' ? 'warning' : 'secondary')))
-                                    ); ?>">
-                                        <?php echo $appointment['status'] == 'no-show' ? 'No-Show' : ucfirst($appointment['status']); ?>
-                                    </span>
-                                    <?php if ($appointment['status'] == 'scheduled' && $appointment['vitals_recorded'] == 1): ?>
-                                    <span class="badge bg-success ms-1" title="Vital signs recorded">Ready</span>
-                                    <?php elseif ($appointment['status'] == 'scheduled'): ?>
-                                    <span class="badge bg-warning ms-1" title="Waiting for vital signs">Pending</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button class="btn btn-sm btn-outline-primary view-patient" data-patient-id="<?php echo $appointment['patient_id']; ?>">
-                                            <span class="material-icons">visibility</span>
-                                        </button>
-                                        <?php if ($appointment['status'] === 'scheduled'): ?>
-                                        <button class="btn btn-sm btn-outline-success start-consultation" data-appointment-id="<?php echo $appointment['id']; ?>" title="Start Consultation">
-                                            <span class="material-icons">play_arrow</span>
-                                        </button>
-                                        <?php else: ?>
-                                        <button class="btn btn-sm btn-outline-secondary" disabled title="Waiting for vital signs">
-                                            <span class="material-icons">hourglass_empty</span>
-                                        </button>
-                                        <?php endif; ?>
+                        if (count($upcoming_appointments) > 0):
+                            foreach ($upcoming_appointments as $appointment):
+                                $appointment_date = new DateTime($appointment['date']);
+                                $appointment_time = new DateTime($appointment['time']);
+                                $is_today = $appointment_date->format('Y-m-d') === date('Y-m-d');
+                        ?>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <?php echo htmlspecialchars($appointment['patient_last_name'] . ', ' . $appointment['patient_first_name']); ?>
+                                        </h6>
+                                        <p class="mb-1 text-muted">
+                                            <?php echo htmlspecialchars($appointment['clinic_name']); ?>
+                                        </p>
+                                        <small class="text-muted">
+                                            <?php echo $appointment_date->format('F d, Y'); ?> at 
+                                            <?php echo $appointment_time->format('h:i A'); ?>
+                                        </small>
                                     </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Upcoming Appointments -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0">Upcoming Appointments</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Patient Name</th>
-                            <th>Age/Gender</th>
-                            <th>Clinic</th>
-                            <th>Purpose</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($upcoming_appointments)): ?>
-                            <tr>
-                                <td colspan="8" class="text-center text-muted">No upcoming appointments</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($upcoming_appointments as $appointment): 
-                                $age = date_diff(date_create($appointment['birthdate']), date_create('today'))->y;
-                            ?>
-                            <tr>
-                                <td><?php echo date('M d, Y', strtotime($appointment['date'])); ?></td>
-                                <td><?php echo date('h:i A', strtotime($appointment['time'])); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['patient_name']); ?></td>
-                                <td><?php echo $age . '/' . $appointment['gender']; ?></td>
-                                <td><?php echo htmlspecialchars($appointment['clinic_name']); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['purpose']); ?></td>
-                                <td>
-                                    <span class="badge bg-<?php echo $appointment['status'] === 'scheduled' ? 'primary' : 'success'; ?>">
+                                    <span class="badge bg-<?php 
+                                        echo match($appointment['status']) {
+                                            'scheduled' => 'primary',
+                                            'completed' => 'success',
+                                            'cancelled' => 'danger',
+                                            default => 'secondary'
+                                        };
+                                    ?>">
                                         <?php echo ucfirst($appointment['status']); ?>
                                     </span>
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button class="btn btn-sm btn-outline-primary view-patient" data-patient-id="<?php echo $appointment['patient_id']; ?>">
-                                            <span class="material-icons">visibility</span>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger cancel-appointment" data-appointment-id="<?php echo $appointment['id']; ?>">
-                                            <span class="material-icons">close</span>
-                                        </button>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">Purpose: <?php echo htmlspecialchars($appointment['purpose']); ?></small>
+                                </div>
+                                <?php if ($is_today): ?>
+                                    <div class="mt-2">
+                                        <span class="badge bg-info">Today's Appointment</span>
                                     </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        <?php 
+                            endforeach;
+                        else:
+                        ?>
+                            <div class="list-group-item text-center py-4">
+                                <p class="text-muted mb-0">No upcoming appointments</p>
+                            </div>
                         <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Past Appointments -->
-    <div class="card">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Past Appointments</h5>
-                <div class="text-muted small">
-                    Last 30 days
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="?view=list" class="btn btn-link text-decoration-none p-0">
+                        View All Appointments
+                        <span class="material-icons align-text-bottom">arrow_forward</span>
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Patient Name</th>
-                            <th>Age/Gender</th>
-                            <th>Clinic</th>
-                            <th>Purpose</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($past_appointments)): ?>
-                            <tr>
-                                <td colspan="8" class="text-center text-muted py-4">
-                                    <div class="d-flex flex-column align-items-center">
-                                        <span class="material-icons mb-2" style="font-size: 2rem; color: #ccc;">event_busy</span>
-                                        <span>No past appointments in the last 30 days</span>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($past_appointments as $appointment): 
-                                $age = date_diff(date_create($appointment['birthdate']), date_create('today'))->y;
-                                $hasConsultation = !empty($appointment['medical_record_id']);
-                                $isCompleted = $appointment['status'] === 'completed';
-                                $appointmentDate = strtotime($appointment['date']);
-                                $isToday = date('Y-m-d') === $appointment['date'];
-                            ?>
-                            <tr class="<?php echo $isToday ? 'table-primary' : ''; ?>">
-                                <td>
-                                    <?php 
-                                        echo date('M d, Y', $appointmentDate);
-                                        if ($isToday) {
-                                            echo ' <span class="badge bg-primary">Today</span>';
-                                        }
-                                    ?>
-                                </td>
-                                <td><?php echo date('h:i A', strtotime($appointment['time'])); ?></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <?php echo htmlspecialchars($appointment['patient_name']); ?>
-                                        <?php if ($appointment['vitals_recorded'] == 1): ?>
-                                            <span class="material-icons ms-1" style="font-size: 1rem; color: #28a745;" title="Vital signs recorded">favorite</span>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                                <td><?php echo $age . '/' . $appointment['gender']; ?></td>
-                                <td><?php echo htmlspecialchars($appointment['clinic_name']); ?></td>
-                                <td>
-                                    <?php if ($hasConsultation && !empty($appointment['chief_complaint'])): ?>
-                                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="<?php echo htmlspecialchars($appointment['chief_complaint']); ?>">
-                                            <?php echo htmlspecialchars($appointment['chief_complaint']); ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="<?php echo htmlspecialchars($appointment['purpose']); ?>">
-                                            <?php echo htmlspecialchars($appointment['purpose']); ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center gap-1">
-                                        <span class="badge bg-<?php echo $appointment['status_color']; ?>">
-                                            <?php echo $appointment['consultation_status']; ?>
-                                        </span>
-                                        <?php if ($hasConsultation): ?>
-                                            <span class="badge bg-info" title="Consultation completed on <?php echo date('M d, Y h:i A', strtotime($appointment['consultation_date'])); ?>">
-                                                <span class="material-icons" style="font-size: 0.875rem; vertical-align: -0.2rem;">check_circle</span>
-                                            </span>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button class="btn btn-sm btn-outline-primary view-patient" 
-                                                data-patient-id="<?php echo $appointment['patient_id']; ?>" 
-                                                title="View Patient Details">
-                                            <span class="material-icons">visibility</span>
-                                        </button>
-                                        <?php if ($hasConsultation): ?>
-                                            <button class="btn btn-sm btn-outline-info view-consultation" 
-                                                    data-appointment-id="<?php echo $appointment['id']; ?>"
-                                                    data-medical-record-id="<?php echo $appointment['medical_record_id']; ?>"
-                                                    title="View Consultation Details">
-                                                <span class="material-icons">description</span>
-                                            </button>
-                                        <?php endif; ?>
-                                        <?php if ($isCompleted): ?>
-                                            <button class="btn btn-sm btn-outline-success view-medical-record" 
-                                                    data-appointment-id="<?php echo $appointment['id']; ?>"
-                                                    title="View Medical Record">
-                                                <span class="material-icons">medical_services</span>
-                                            </button>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
-</div>
 
 <!-- Start Consultation Modal -->
 <div class="modal fade" id="startConsultationModal" tabindex="-1">
