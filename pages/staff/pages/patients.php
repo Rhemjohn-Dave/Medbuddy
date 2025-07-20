@@ -39,10 +39,10 @@ if (!empty($assigned_clinics)) {
     }
     $where_sql = $where ? " AND " . implode(" AND ", $where) : "";
     $sql = "SELECT DISTINCT p.*, u.email,
-                (SELECT COUNT(*) FROM appointments WHERE patient_id = p.user_id) as total_appointments,
-                (SELECT COUNT(*) FROM medical_records WHERE patient_id = p.user_id) as total_records
+                (SELECT COUNT(*) FROM appointments WHERE patient_id = p.id) as total_appointments,
+                (SELECT COUNT(*) FROM medical_records WHERE patient_id = p.id) as total_records
             FROM patients p
-            JOIN appointments a ON p.user_id = a.patient_id
+            JOIN appointments a ON p.id = a.patient_id
             LEFT JOIN users u ON p.user_id = u.id
             WHERE a.clinic_id IN ($placeholders) $where_sql
             ORDER BY p.first_name ASC";
