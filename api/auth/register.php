@@ -83,8 +83,8 @@ if(
         // If role is patient, insert patient details
         else if($data->role === 'patient') {
             $patient_query = "INSERT INTO patients (user_id, first_name, last_name, date_of_birth, gender, blood_type, 
-                           contact_number, address, emergency_contact_name, emergency_contact_number) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           contact_number, address, emergency_contact_name, emergency_contact_number, medical_history, allergies) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $patient_stmt = $db->prepare($patient_query);
             $patient_stmt->execute([
                 $user_id, 
@@ -96,7 +96,9 @@ if(
                 $data->contactNumber,
                 $data->address,
                 $data->emergencyContactName,
-                $data->emergencyContactNumber
+                $data->emergencyContactNumber,
+                isset($data->medicalHistory) ? $data->medicalHistory : null,
+                isset($data->allergies) ? $data->allergies : null
             ]);
         }
         // If role is staff, insert staff details
