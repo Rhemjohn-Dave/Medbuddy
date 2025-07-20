@@ -279,8 +279,37 @@ function renderPatientDetailsModal($db, $patient_id) {
                                             <?php foreach ($medical_records as $record): ?>
                                                 <tr>
                                                     <td><?php echo htmlspecialchars($record['created_at'] ?? '-'); ?></td>
-                                                    <td><?php echo htmlspecialchars($record['diagnosis'] ?? '-'); ?></td>
-                                                    <td><?php echo htmlspecialchars($record['prescription'] ?? '-'); ?></td>
+                                                    <td>
+                                                        <?php
+                                                        // Fetch only the Primary Diagnosis for this medical record
+                                                        $sql = "SELECT diagnosis FROM diagnoses WHERE medical_record_id = ? AND (diagnosis LIKE '%[Type: Primary]%' OR diagnosis LIKE '%[Primary]%') ORDER BY created_at DESC LIMIT 1";
+                                                        $stmt = $db->prepare($sql);
+                                                        $stmt->execute([$record['id']]);
+                                                        $primary_diagnosis = $stmt->fetchColumn();
+                                                        if ($primary_diagnosis) {
+                                                            // Extract only the main diagnosis name (before any ' [' or ' -')
+                                                            $main_diag = preg_split('/\s*\[|\s*-/', $primary_diagnosis, 2)[0];
+                                                            echo htmlspecialchars(trim($main_diag));
+                                                        } else {
+                                                            echo '-';
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php
+                                                        // Fetch only the Medication Name for this medical record (first prescription, first part before '|')
+                                                        $sql = "SELECT prescription_text FROM prescriptions WHERE medical_record_id = ? ORDER BY created_at DESC LIMIT 1";
+                                                        $stmt = $db->prepare($sql);
+                                                        $stmt->execute([$record['id']]);
+                                                        $prescription = $stmt->fetchColumn();
+                                                        if ($prescription) {
+                                                            $medication_name = explode('|', $prescription)[0];
+                                                            echo htmlspecialchars($medication_name);
+                                                        } else {
+                                                            echo '-';
+                                                        }
+                                                        ?>
+                                                    </td>
                                                     <td><?php echo htmlspecialchars($record['notes'] ?? '-'); ?></td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -307,8 +336,37 @@ function renderPatientDetailsModal($db, $patient_id) {
                                             <?php foreach ($diagnoses as $diag): ?>
                                                 <tr>
                                                     <td><?php echo htmlspecialchars($diag['created_at'] ?? $diag['record_date'] ?? '-'); ?></td>
-                                                    <td><?php echo htmlspecialchars($diag['diagnosis'] ?? '-'); ?></td>
-                                                    <td><?php echo htmlspecialchars($diag['created_by'] ?? '-'); ?></td>
+                                                    <td>
+                                                        <?php
+                                                        if (!empty($diag['diagnosis'])) {
+                                                            // Extract only the main diagnosis name (before any parenthesis, bracket, or dash)
+                                                            if (preg_match('/^([^\(\[\-]+)/', $diag['diagnosis'], $matches)) {
+                                                                echo htmlspecialchars(trim($matches[1]));
+                                                            } else {
+                                                                echo htmlspecialchars(trim($diag['diagnosis']));
+                                                            }
+                                                        } else {
+                                                            echo '-';
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php
+                                                        // Display doctor's name instead of user id for created_by
+                                                        if (!empty($diag['created_by'])) {
+                                                            $doctor_name = '-';
+                                                            $stmt = $db->prepare("SELECT first_name, last_name FROM doctors WHERE user_id = ? LIMIT 1");
+                                                            $stmt->execute([$diag['created_by']]);
+                                                            $doc = $stmt->fetch(PDO::FETCH_ASSOC);
+                                                            if ($doc) {
+                                                                $doctor_name = $doc['first_name'] . ' ' . $doc['last_name'];
+                                                            }
+                                                            echo htmlspecialchars($doctor_name);
+                                                        } else {
+                                                            echo '-';
+                                                        }
+                                                        ?>
+                                                    </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
