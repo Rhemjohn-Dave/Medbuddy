@@ -113,13 +113,29 @@ switch ($request_method) {
             if ($receiver_id && $message_content) {
                 try {
                     // Check if receiver_id exists and is approved
-                    $user_check_sql = "SELECT id FROM users WHERE id = ? AND approval_status = 'approved' LIMIT 1";
+                    $user_check_sql = "SELECT id, role FROM users WHERE id = ? AND approval_status = 'approved' LIMIT 1";
                     $user_check_stmt = $db->prepare($user_check_sql);
                     $user_check_stmt->execute([$receiver_id]);
-                    if ($user_check_stmt->rowCount() === 0) {
+                    $receiver = $user_check_stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if (!$receiver) {
                          ob_end_clean(); // Clear any output buffer
                          http_response_code(404); // Not Found
                          echo json_encode(['success' => false, 'message' => 'Recipient not found or not approved.']);
+                         exit();
+                    }
+                    
+                    // Get sender's role to check permissions
+                    $sender_check_sql = "SELECT role FROM users WHERE id = ? LIMIT 1";
+                    $sender_check_stmt = $db->prepare($sender_check_sql);
+                    $sender_check_stmt->execute([$user_id]);
+                    $sender = $sender_check_stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    // Prevent patients from messaging other patients
+                    if ($sender && $sender['role'] === 'patient' && $receiver['role'] === 'patient') {
+                         ob_end_clean(); // Clear any output buffer
+                         http_response_code(403); // Forbidden
+                         echo json_encode(['success' => false, 'message' => 'Patients cannot message other patients.']);
                          exit();
                     }
 

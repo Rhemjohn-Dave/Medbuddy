@@ -67,25 +67,23 @@ try {
     $latest_messages_stmt->execute([$user_id, $user_id]);
     $latest_messages = $latest_messages_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-     // Get users for recipient selection in compose modal
+     // Get users for recipient selection in compose modal (patients can only message doctors and staff)
     $users_sql = "SELECT u.id, u.role, u.email,
         CASE 
             WHEN u.role = 'doctor' THEN d.first_name 
-            WHEN u.role = 'patient' THEN p.first_name 
             WHEN u.role = 'staff' THEN s.first_name
             ELSE NULL 
         END as first_name,
         CASE 
             WHEN u.role = 'doctor' THEN d.last_name 
-            WHEN u.role = 'patient' THEN p.last_name 
             WHEN u.role = 'staff' THEN s.last_name
             ELSE NULL 
         END as last_name
         FROM users u
         LEFT JOIN doctors d ON u.id = d.user_id 
-        LEFT JOIN patients p ON u.id = p.user_id 
         LEFT JOIN staff s ON u.id = s.user_id 
-        WHERE u.id != ? AND u.approval_status = 'approved'
+        WHERE u.id != ? AND u.approval_status = 'approved' 
+        AND (u.role = 'doctor' OR u.role = 'staff')
         ORDER BY u.role, first_name, last_name";
     
     $users_stmt = $conn->prepare($users_sql);
