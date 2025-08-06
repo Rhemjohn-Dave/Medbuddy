@@ -611,25 +611,35 @@ function renderPatientDetailsModal($db, $patient_id) {
             </div>
             <div class="modal-body">
                 <form id="scheduleAppointmentForm">
+                    <input type="hidden" id="appointmentPatientId" name="patient_id">
+                    <input type="hidden" id="appointmentDoctorId" name="doctor_id" value="<?php echo $doctor_id; ?>">
                     <div class="mb-3">
                         <label class="form-label">Patient Name</label>
                         <input type="text" class="form-control" id="appointmentPatientName" readonly>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">Clinic</label>
+                        <select class="form-select" id="appointmentClinicId" name="clinic_id" required>
+                            <option value="">Select clinic...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Date</label>
-                        <input type="date" class="form-control" id="appointmentDate" required>
+                        <input type="date" class="form-control" id="appointmentDate" name="date" required min="<?php echo date('Y-m-d'); ?>">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Time</label>
-                        <input type="time" class="form-control" id="appointmentTime" required>
+                        <select class="form-select" id="appointmentTime" name="time" required>
+                            <option value="">Select time...</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Purpose</label>
-                        <textarea class="form-control" id="appointmentPurpose" rows="3" required></textarea>
+                        <textarea class="form-control" id="appointmentPurpose" name="purpose" rows="3" required></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Notes</label>
-                        <textarea class="form-control" id="appointmentNotes" rows="3"></textarea>
+                        <textarea class="form-control" id="appointmentNotes" name="notes" rows="3"></textarea>
                     </div>
                 </form>
             </div>
@@ -717,8 +727,37 @@ function exportTableToCSV(filename) {
 }
 // Open schedule modal
 function openScheduleModal(patientName, patientId) {
+    // Reset form first
+    document.getElementById('scheduleAppointmentForm').reset();
+    
+    // Set patient information after reset
     document.getElementById('appointmentPatientName').value = patientName;
-    // You can set patientId in a hidden field if needed
+    document.getElementById('appointmentPatientId').value = patientId;
+    
+    // Load clinics for this patient and doctor
+    const clinicSelect = document.getElementById('appointmentClinicId');
+    clinicSelect.innerHTML = '<option value="">Loading...</option>';
+    
+    fetch(`../../api/clinics.php?patient_id=${patientId}&doctor_id=<?php echo $doctor_id; ?>`)
+        .then(res => res.json())
+        .then(data => {
+            clinicSelect.innerHTML = '<option value="">Select clinic...</option>';
+            if (data.success && data.clinics && data.clinics.length > 0) {
+                data.clinics.forEach(clinic => {
+                    const opt = document.createElement('option');
+                    opt.value = clinic.id;
+                    opt.textContent = clinic.name;
+                    clinicSelect.appendChild(opt);
+                });
+            } else {
+                clinicSelect.innerHTML = '<option value="">No clinics found</option>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading clinics:', error);
+            clinicSelect.innerHTML = '<option value="">Error loading clinics</option>';
+        });
+    
     const modal = new bootstrap.Modal(document.getElementById('scheduleAppointmentModal'));
     modal.show();
 }
@@ -748,6 +787,109 @@ function openLabRequestModal(patientId, doctorId) {
     var modal = new bootstrap.Modal(document.getElementById('labRequestModal'));
     modal.show();
 }
+
+// Add event listeners for appointment scheduling
+document.addEventListener('DOMContentLoaded', function() {
+    // Load time slots when clinic and date are selected
+    document.getElementById('appointmentClinicId').addEventListener('change', updateTimeSlots);
+    document.getElementById('appointmentDate').addEventListener('change', updateTimeSlots);
+    
+    function updateTimeSlots() {
+        const clinicId = document.getElementById('appointmentClinicId').value;
+        const date = document.getElementById('appointmentDate').value;
+        const timeSelect = document.getElementById('appointmentTime');
+        
+        // Reset time select
+        timeSelect.innerHTML = '<option value="">Select time...</option>';
+        timeSelect.disabled = true;
+        
+        // Only proceed if both clinic and date are selected
+        if (!clinicId || !date) {
+            timeSelect.innerHTML = '<option value="">Select clinic and date first</option>';
+            return;
+        }
+        
+        // Show loading state
+        timeSelect.innerHTML = '<option value="">Loading available slots...</option>';
+        
+        // Fetch available slots from the server
+        fetch(`../../api/get_available_slots.php?doctor_id=<?php echo $doctor_id; ?>&clinic_id=${clinicId}&date=${date}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const availableSlots = data.available_slots;
+                    
+                    // Clear the select element
+                    timeSelect.innerHTML = '<option value="">Select time...</option>';
+                    
+                    // Add available slots to the select
+                    availableSlots.forEach(slot => {
+                        const option = document.createElement('option');
+                        option.value = slot.time;
+                        option.text = slot.formatted_time;
+                        timeSelect.appendChild(option);
+                    });
+                    
+                    // Enable the select after populating
+                    timeSelect.disabled = false;
+                    
+                    // If no slots are available, show a message
+                    if (availableSlots.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.text = 'No available time slots';
+                        option.disabled = true;
+                        timeSelect.appendChild(option);
+                    }
+                } else {
+                    console.error('Error fetching available slots:', data.message);
+                    timeSelect.innerHTML = '<option value="">Error loading slots</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                timeSelect.innerHTML = '<option value="">Error loading slots</option>';
+            });
+    }
+    
+    // Handle appointment form submission
+    document.getElementById('saveAppointment').addEventListener('click', function() {
+        const form = document.getElementById('scheduleAppointmentForm');
+        const formData = new FormData(form);
+        
+        // Validate required fields
+        const requiredFields = ['patient_id', 'clinic_id', 'date', 'time', 'purpose'];
+        for (let field of requiredFields) {
+            if (!formData.get(field)) {
+                alert(`Please fill in the ${field.replace('_', ' ')} field.`);
+                return;
+            }
+        }
+        
+        // Submit appointment
+        fetch('../../api/appointments.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Appointment scheduled successfully!');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleAppointmentModal'));
+                modal.hide();
+                // Optionally refresh the page or update the UI
+                location.reload();
+            } else {
+                alert('Error scheduling appointment: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while scheduling the appointment.');
+        });
+    });
+});
+
 document.getElementById('labRequestForm').addEventListener('submit', function(event) {
     event.preventDefault();
     const form = event.target;

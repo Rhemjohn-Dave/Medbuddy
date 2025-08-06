@@ -26,16 +26,36 @@ try {
         echo json_encode(['success' => true, 'appointments' => $appointments]);
         exit();
     }
-    // Default: get patient ID from session user
-    $stmt = $conn->prepare("SELECT id FROM patients WHERE user_id = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    $patient = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$patient) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Patient not found']);
-        exit();
+    // Check if this is a doctor-initiated appointment (patient_id in form data)
+    $data = isset($_SERVER['HTTP_X_REQUESTED_WITH']) ? 
+            json_decode(file_get_contents('php://input'), true) : 
+            $_POST;
+    
+    if (isset($data['patient_id']) && !empty($data['patient_id'])) {
+        // Doctor is scheduling an appointment for a patient
+        $patient_id = $data['patient_id'];
+        
+        // Verify the patient exists
+        $stmt = $conn->prepare("SELECT id FROM patients WHERE id = ?");
+        $stmt->execute([$patient_id]);
+        $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$patient) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Patient not found']);
+            exit();
+        }
+    } else {
+        // Patient is scheduling their own appointment
+        $stmt = $conn->prepare("SELECT id FROM patients WHERE user_id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$patient) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Patient not found']);
+            exit();
+        }
+        $patient_id = $patient['id'];
     }
-    $patient_id = $patient['id'];
 
     // Handle different HTTP methods
     $method = $_SERVER['REQUEST_METHOD'];
@@ -121,52 +141,54 @@ try {
 
         case 'POST':
             // Create new appointment
-            // Handle both JSON and form data
-            $data = isset($_SERVER['HTTP_X_REQUESTED_WITH']) ? 
-                    json_decode(file_get_contents('php://input'), true) : 
-                    $_POST;
+            // Data is already parsed above
             
-            // Check if patient profile is complete (required for appointment booking)
-            $stmt = $conn->prepare("SELECT date_of_birth, gender, contact_number, address, emergency_contact_name, emergency_contact_number FROM patients WHERE id = ?");
-            $stmt->execute([$patient_id]);
-            $patient_profile = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Check if patient profile is complete (only for patient-initiated appointments)
+            $is_doctor_initiated = isset($data['patient_id']) && !empty($data['patient_id']);
             
-            $profile_complete = true;
-            $missing_fields = [];
-            
-            if (empty($patient_profile['date_of_birth'])) {
-                $profile_complete = false;
-                $missing_fields[] = 'Date of Birth';
-            }
-            if (empty($patient_profile['gender'])) {
-                $profile_complete = false;
-                $missing_fields[] = 'Gender';
-            }
-            if (empty($patient_profile['contact_number'])) {
-                $profile_complete = false;
-                $missing_fields[] = 'Contact Number';
-            }
-            if (empty($patient_profile['address'])) {
-                $profile_complete = false;
-                $missing_fields[] = 'Address';
-            }
-            if (empty($patient_profile['emergency_contact_name'])) {
-                $profile_complete = false;
-                $missing_fields[] = 'Emergency Contact Name';
-            }
-            if (empty($patient_profile['emergency_contact_number'])) {
-                $profile_complete = false;
-                $missing_fields[] = 'Emergency Contact Number';
-            }
-            
-            if (!$profile_complete) {
-                error_log("Profile completion check failed for patient ID: $patient_id. Missing fields: " . implode(', ', $missing_fields));
-                echo json_encode([
-                    'success' => false, 
-                    'message' => 'Profile incomplete. Please complete your profile before booking appointments.',
-                    'missing_fields' => $missing_fields
-                ]);
-                exit();
+            if (!$is_doctor_initiated) {
+                // Only check profile completion for patient-initiated appointments
+                $stmt = $conn->prepare("SELECT date_of_birth, gender, contact_number, address, emergency_contact_name, emergency_contact_number FROM patients WHERE id = ?");
+                $stmt->execute([$patient_id]);
+                $patient_profile = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                $profile_complete = true;
+                $missing_fields = [];
+                
+                if (empty($patient_profile['date_of_birth'])) {
+                    $profile_complete = false;
+                    $missing_fields[] = 'Date of Birth';
+                }
+                if (empty($patient_profile['gender'])) {
+                    $profile_complete = false;
+                    $missing_fields[] = 'Gender';
+                }
+                if (empty($patient_profile['contact_number'])) {
+                    $profile_complete = false;
+                    $missing_fields[] = 'Contact Number';
+                }
+                if (empty($patient_profile['address'])) {
+                    $profile_complete = false;
+                    $missing_fields[] = 'Address';
+                }
+                if (empty($patient_profile['emergency_contact_name'])) {
+                    $profile_complete = false;
+                    $missing_fields[] = 'Emergency Contact Name';
+                }
+                if (empty($patient_profile['emergency_contact_number'])) {
+                    $profile_complete = false;
+                    $missing_fields[] = 'Emergency Contact Number';
+                }
+                
+                if (!$profile_complete) {
+                    error_log("Profile completion check failed for patient ID: $patient_id. Missing fields: " . implode(', ', $missing_fields));
+                    echo json_encode([
+                        'success' => false, 
+                        'message' => 'Profile incomplete. Please complete your profile before booking appointments.',
+                        'missing_fields' => $missing_fields
+                    ]);
+                    exit();
+                }
             }
             
             // Validate required fields
