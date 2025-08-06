@@ -421,55 +421,9 @@ try {
 
                         <!-- Additional fields for patients -->
                         <div id="patientFields" class="role-fields">
-                            <div class="mb-3">
-                                <label for="dateOfBirth" class="form-label">Date of Birth</label>
-                                <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
-                                <i class="bi bi-calendar input-icon"></i>
-                            </div>
-                            <div class="mb-3">
-                                <label for="gender" class="form-label">Gender</label>
-                                <select class="form-select" id="gender" name="gender" required>
-                                    <option value="">Select gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
-                                </select>
-                                <i class="bi bi-gender-ambiguous input-icon"></i>
-                            </div>
-                            <div class="mb-3">
-                                <label for="bloodType" class="form-label">Blood Type</label>
-                                <select class="form-select" id="bloodType" name="bloodType">
-                                    <option value="">Select blood type</option>
-                                    <option value="A+">A+</option>
-                                    <option value="A-">A-</option>
-                                    <option value="B+">B+</option>
-                                    <option value="B-">B-</option>
-                                    <option value="AB+">AB+</option>
-                                    <option value="AB-">AB-</option>
-                                    <option value="O+">O+</option>
-                                    <option value="O-">O-</option>
-                                </select>
-                                <i class="bi bi-droplet input-icon"></i>
-                            </div>
-                            <div class="mb-3">
-                                <label for="patientContact" class="form-label">Contact Number</label>
-                                <input type="tel" class="form-control" id="patientContact" name="patientContact" placeholder="Enter your contact number" required>
-                                <i class="bi bi-telephone input-icon"></i>
-                            </div>
-                            <div class="mb-3">
-                                <label for="patientAddress" class="form-label">Address</label>
-                                <textarea class="form-control" id="patientAddress" name="patientAddress" rows="2" placeholder="Enter your address" required></textarea>
-                                <i class="bi bi-geo-alt input-icon"></i>
-                            </div>
-                            <div class="mb-3">
-                                <label for="emergencyContact" class="form-label">Emergency Contact Name</label>
-                                <input type="text" class="form-control" id="emergencyContact" name="emergencyContact" placeholder="Enter emergency contact name" required>
-                                <i class="bi bi-person-plus input-icon"></i>
-                            </div>
-                            <div class="mb-3">
-                                <label for="emergencyNumber" class="form-label">Emergency Contact Number</label>
-                                <input type="tel" class="form-control" id="emergencyNumber" name="emergencyNumber" placeholder="Enter emergency contact number" required>
-                                <i class="bi bi-telephone-plus input-icon"></i>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Note:</strong> As a patient, you can complete your profile information after your account is approved by the administrator. You will need to provide your complete personal information before booking appointments. Medical history and allergies are collected during registration.
                             </div>
                             <div class="mb-3">
                                 <label for="medicalHistory" class="form-label">Medical History</label>
@@ -478,7 +432,7 @@ try {
                             </div>
                             <div class="mb-3">
                                 <label for="allergies" class="form-label">Allergies</label>
-                                <textarea class="form-control" id="allergies" name="allergies" rows="2" placeholder="Enter any allergies (if none, type 'None')"></textarea>
+                                <textarea class="form-control" id="allergies" name="allergies" rows="2" placeholder="Enter any allergies (if none, type 'None')">None</textarea>
                                 <i class="bi bi-exclamation-triangle input-icon"></i>
                             </div>
                         </div>
@@ -527,6 +481,8 @@ try {
             const patientFields = document.getElementById('patientFields');
             const staffFields = document.getElementById('staffFields');
             
+            console.log('Role changed to:', this.value);
+            
             // Hide all role-specific fields first
             doctorFields.style.display = 'none';
             patientFields.style.display = 'none';
@@ -537,13 +493,8 @@ try {
             document.getElementById('licenseNumber').required = false;
             document.getElementById('doctorContact').required = false;
             document.getElementById('doctorAddress').required = false;
-            document.getElementById('dateOfBirth').required = false;
-            document.getElementById('gender').required = false;
-            document.getElementById('bloodType').required = false;
-            document.getElementById('patientContact').required = false;
-            document.getElementById('patientAddress').required = false;
-            document.getElementById('emergencyContact').required = false;
-            document.getElementById('emergencyNumber').required = false;
+            document.getElementById('medicalHistory').required = false;
+            document.getElementById('allergies').required = false;
             document.getElementById('staffContact').required = false;
             document.getElementById('staffAddress').required = false;
             
@@ -556,13 +507,9 @@ try {
                 document.getElementById('doctorAddress').required = true;
             } else if (this.value === 'patient') {
                 patientFields.style.display = 'block';
-                document.getElementById('dateOfBirth').required = true;
-                document.getElementById('gender').required = true;
-                document.getElementById('bloodType').required = true;
-                document.getElementById('patientContact').required = true;
-                document.getElementById('patientAddress').required = true;
-                document.getElementById('emergencyContact').required = true;
-                document.getElementById('emergencyNumber').required = true;
+                document.getElementById('medicalHistory').required = true;
+                document.getElementById('allergies').required = true;
+                console.log('Patient fields shown');
             } else if (this.value === 'staff') {
                 staffFields.style.display = 'block';
                 document.getElementById('staffContact').required = true;
@@ -619,13 +566,6 @@ try {
                 formData.contactNumber = document.getElementById('doctorContact').value;
                 formData.address = document.getElementById('doctorAddress').value;
             } else if (formData.role === 'patient') {
-                formData.dateOfBirth = document.getElementById('dateOfBirth').value;
-                formData.gender = document.getElementById('gender').value;
-                formData.bloodType = document.getElementById('bloodType').value;
-                formData.contactNumber = document.getElementById('patientContact').value;
-                formData.address = document.getElementById('patientAddress').value;
-                formData.emergencyContactName = document.getElementById('emergencyContact').value;
-                formData.emergencyContactNumber = document.getElementById('emergencyNumber').value;
                 formData.medicalHistory = document.getElementById('medicalHistory').value;
                 formData.allergies = document.getElementById('allergies').value || 'None';
             } else if (formData.role === 'staff') {
@@ -641,25 +581,28 @@ try {
                 return false;
             }
 
-            // Validate date of birth for patients
-            if (formData.role === 'patient') {
-                const dob = new Date(formData.dateOfBirth);
-                const today = new Date();
-                let age = today.getFullYear() - dob.getFullYear();
-                const monthDiff = today.getMonth() - dob.getMonth();
-                
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-                    age--;
-                }
-                
-                if (age < 0) {
-                    showError('Invalid date of birth!');
-                    registerButton.disabled = false;
-                    registerButton.innerHTML = '<i class="bi bi-person-plus"></i> Create Account';
-                    return false;
-                }
-            }
+            // Validate date of birth for patients (removed as patients will complete profile after approval)
+            // if (formData.role === 'patient') {
+            //     const dob = new Date(formData.dateOfBirth);
+            //     const today = new Date();
+            //     let age = today.getFullYear() - dob.getFullYear();
+            //     const monthDiff = today.getMonth() - dob.getMonth();
+            //     
+            //     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+            //         age--;
+            //     }
+            //     
+            //     if (age < 0) {
+            //         showError('Invalid date of birth!');
+            //         registerButton.disabled = false;
+            //         registerButton.innerHTML = '<i class="bi bi-person-plus"></i> Create Account';
+            //         return false;
+            //     }
+            // }
 
+            // Debug: Log form data
+            console.log('Form data being sent:', formData);
+            
             // Send registration request
             fetch('../api/auth/register.php', {
                 method: 'POST',

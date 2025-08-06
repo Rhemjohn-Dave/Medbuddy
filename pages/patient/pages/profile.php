@@ -139,6 +139,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h5 class="card-title mb-0">Profile Information</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Profile Completion Notice -->
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="material-icons me-2">info</i>
+                            <div>
+                                <strong>Complete Your Profile</strong><br>
+                                <small>Fields marked with <span class="text-danger">*</span> are required before you can book appointments. Medical history and allergies are already collected during registration.</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
                     <?php if (isset($_SESSION['success_message'])): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                                             <?php 
@@ -218,14 +230,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Contact Number</label>
-                                    <input type="tel" name="contact_number" class="form-control" value="<?php echo htmlspecialchars($patient['contact_number'] ?? ''); ?>">
+                                    <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                    <input type="tel" name="contact_number" class="form-control" value="<?php echo htmlspecialchars($patient['contact_number'] ?? ''); ?>" required>
                         </div>
                     </div>
                             <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">Address</label>
-                                    <textarea name="address" class="form-control" rows="2"><?php echo htmlspecialchars($patient['address'] ?? ''); ?></textarea>
+                        <label class="form-label">Address <span class="text-danger">*</span></label>
+                                    <textarea name="address" class="form-control" rows="2" required><?php echo htmlspecialchars($patient['address'] ?? ''); ?></textarea>
     </div>
 </div>
 
@@ -235,14 +247,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
                     <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Emergency Contact Name</label>
-                                    <input type="text" name="emergency_contact_name" class="form-control" value="<?php echo htmlspecialchars($patient['emergency_contact_name'] ?? ''); ?>">
+                                    <label class="form-label">Emergency Contact Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="emergency_contact_name" class="form-control" value="<?php echo htmlspecialchars($patient['emergency_contact_name'] ?? ''); ?>" required>
                                 </div>
                     </div>
                     <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Emergency Contact Number</label>
-                                    <input type="tel" name="emergency_contact_number" class="form-control" value="<?php echo htmlspecialchars($patient['emergency_contact_number'] ?? ''); ?>">
+                                    <label class="form-label">Emergency Contact Number <span class="text-danger">*</span></label>
+                                    <input type="tel" name="emergency_contact_number" class="form-control" value="<?php echo htmlspecialchars($patient['emergency_contact_number'] ?? ''); ?>" required>
                                 </div>
                             </div>
 

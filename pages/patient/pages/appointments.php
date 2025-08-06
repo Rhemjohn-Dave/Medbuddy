@@ -8,13 +8,42 @@ if (!defined('PATIENT_ACCESS')) {
 // Include database configuration
 require_once __DIR__ . '/../../../config/database.php';
 
-// Get patient ID
+// Get patient ID and check profile completion
 $db = new Database();
 $conn = $db->getConnection();
-$stmt = $conn->prepare("SELECT id FROM patients WHERE user_id = ?");
+$stmt = $conn->prepare("SELECT id, date_of_birth, gender, contact_number, address, emergency_contact_name, emergency_contact_number FROM patients WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 $patient_id = $patient['id'];
+
+// Check if patient profile is complete (required for appointment booking)
+$profile_complete = true;
+$missing_fields = [];
+
+if (empty($patient['date_of_birth'])) {
+    $profile_complete = false;
+    $missing_fields[] = 'Date of Birth';
+}
+if (empty($patient['gender'])) {
+    $profile_complete = false;
+    $missing_fields[] = 'Gender';
+}
+if (empty($patient['contact_number'])) {
+    $profile_complete = false;
+    $missing_fields[] = 'Contact Number';
+}
+if (empty($patient['address'])) {
+    $profile_complete = false;
+    $missing_fields[] = 'Address';
+}
+if (empty($patient['emergency_contact_name'])) {
+    $profile_complete = false;
+    $missing_fields[] = 'Emergency Contact Name';
+}
+if (empty($patient['emergency_contact_number'])) {
+    $profile_complete = false;
+    $missing_fields[] = 'Emergency Contact Number';
+}
 
 // Get all active doctors with their specializations
 $stmt = $conn->prepare("
@@ -225,11 +254,32 @@ $all_calendar_events = array_merge($calendar_events, $schedule_events);
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">My Appointments</h4>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleAppointmentModal">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleAppointmentModal" <?php echo !$profile_complete ? 'disabled' : ''; ?>>
             <span class="material-icons align-text-bottom">add</span>
             Schedule New Appointment
         </button>
     </div>
+
+    <!-- Profile Completion Warning -->
+    <?php if (!$profile_complete): ?>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="material-icons me-2">warning</i>
+            <div>
+                <strong>Profile Incomplete!</strong> You need to complete your profile before booking appointments.
+                <br>
+                <small class="text-muted">Missing fields: <?php echo implode(', ', $missing_fields); ?></small>
+            </div>
+        </div>
+        <div class="mt-2">
+            <a href="index.php?page=profile" class="btn btn-warning btn-sm">
+                <i class="material-icons align-text-bottom">edit</i>
+                Complete Profile
+            </a>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <?php endif; ?>
 
     <!-- View Toggle -->
     <div class="btn-group mb-4" role="group">
@@ -818,11 +868,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateUpcomingAppointments();
                 });
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: data.message
-                });
+                // Handle profile completion error
+                if (data.message && data.message.includes('Profile incomplete')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Profile Incomplete!',
+                        text: data.message,
+                        confirmButtonText: 'Complete Profile',
+                        showCancelButton: true,
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = 'index.php?page=profile';
+                        }
+                    });
+                } else {
+                    // Handle other errors
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message || 'Failed to schedule appointment'
+                    });
+                }
             }
         })
         .catch(error => {
@@ -1044,5 +1111,32 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 </script>
 <?php endif; ?>
+
+<script>
+// Profile completion validation
+<?php if (!$profile_complete): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    // Disable appointment booking if profile is incomplete
+    const scheduleButton = document.querySelector('[data-bs-target="#scheduleAppointmentModal"]');
+    if (scheduleButton) {
+        scheduleButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Profile Incomplete!',
+                text: 'You need to complete your profile before booking appointments.',
+                confirmButtonText: 'Complete Profile',
+                showCancelButton: true,
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'index.php?page=profile';
+                }
+            });
+        });
+    }
+});
+<?php endif; ?>
+</script>
 </body>
 </html> 

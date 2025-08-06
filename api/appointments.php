@@ -126,6 +126,49 @@ try {
                     json_decode(file_get_contents('php://input'), true) : 
                     $_POST;
             
+            // Check if patient profile is complete (required for appointment booking)
+            $stmt = $conn->prepare("SELECT date_of_birth, gender, contact_number, address, emergency_contact_name, emergency_contact_number FROM patients WHERE id = ?");
+            $stmt->execute([$patient_id]);
+            $patient_profile = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            $profile_complete = true;
+            $missing_fields = [];
+            
+            if (empty($patient_profile['date_of_birth'])) {
+                $profile_complete = false;
+                $missing_fields[] = 'Date of Birth';
+            }
+            if (empty($patient_profile['gender'])) {
+                $profile_complete = false;
+                $missing_fields[] = 'Gender';
+            }
+            if (empty($patient_profile['contact_number'])) {
+                $profile_complete = false;
+                $missing_fields[] = 'Contact Number';
+            }
+            if (empty($patient_profile['address'])) {
+                $profile_complete = false;
+                $missing_fields[] = 'Address';
+            }
+            if (empty($patient_profile['emergency_contact_name'])) {
+                $profile_complete = false;
+                $missing_fields[] = 'Emergency Contact Name';
+            }
+            if (empty($patient_profile['emergency_contact_number'])) {
+                $profile_complete = false;
+                $missing_fields[] = 'Emergency Contact Number';
+            }
+            
+            if (!$profile_complete) {
+                error_log("Profile completion check failed for patient ID: $patient_id. Missing fields: " . implode(', ', $missing_fields));
+                echo json_encode([
+                    'success' => false, 
+                    'message' => 'Profile incomplete. Please complete your profile before booking appointments.',
+                    'missing_fields' => $missing_fields
+                ]);
+                exit();
+            }
+            
             // Validate required fields
             $required = ['doctor_id', 'clinic_id', 'date', 'time', 'purpose'];
             foreach ($required as $field) {
